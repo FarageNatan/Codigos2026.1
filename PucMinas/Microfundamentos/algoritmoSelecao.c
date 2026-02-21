@@ -7,7 +7,13 @@ void swap(int* vet, int i, int j){
 	vet[j] = temp;
 }
 
+void imprimeVetor(int* vet, int tamVet){
+    for(int i = 0; i < tamVet; i++){   
+	    printf("%d\n", vet[i]);
+    }
+}
 
+//Versao Original
 void ordenacaoSelecao(int* vet, int tam){
 	for(int i = 0; i < (tam - 1); i++){
 		int menor = i;
@@ -17,6 +23,8 @@ void ordenacaoSelecao(int* vet, int tam){
 			}
 		}
 		swap(vet, menor, i);
+        printf("Passagem: %d\n", i);
+        imprimeVetor(vet, tam);
 	}
 }
 
@@ -36,10 +44,8 @@ int main(){
 	int vetor[tamVet];
 	preencheVetor(vetor, tamVet);
 	ordenacaoSelecao(vetor, tamVet);
-	printf("Vetor Ordenado: \n");
-	for(int i = 0; i < tamVet; i++){
-		printf("%d\n", vetor[i]);
-	}
+	//printf("Vetor Ordenado: \n");
+	//imprimeVetor(vetor, tamVet);
 
 	return 0;
 }
