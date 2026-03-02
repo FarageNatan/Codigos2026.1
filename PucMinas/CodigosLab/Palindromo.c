@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-
 int tamanhoPalavra(char* palavra){
 	int tamanho = 0;
 	while(palavra[tamanho] != '\0'){
@@ -10,7 +9,6 @@ int tamanhoPalavra(char* palavra){
 	}			
 	return tamanho;
 }
-
 
 bool conferePalindromo(char* palavra, int tamanho){
 	bool ehPalindromo = true;
@@ -35,20 +33,32 @@ void removerQuebraLinha(char *str) {
     }
 }
 
+bool palindromoRec(char* s, int tam, int esq, int dir){
+	bool ehPalindromo = true;
+	if(esq < dir){
+		if(s[esq] != s[dir]){
+			ehPalindromo = false;
+			esq = dir;
+		}else{
+			palindromoRec(s, tam, esq + 1, dir - 1);
+		}
+	}
+	return ehPalindromo;
+}
+
 int main(){
 	char palavra[1000];
-	fgets(palavra, sizeof(palavra), stdin);
-	removerQuebraLinha(palavra);
+	scanf(" %s", palavra);
 	int tamanho = tamanhoPalavra(palavra);
-	while(tamanho != 3 && palavra[0] != 'F' && palavra[1] != 'I' && palavra[2] != 'M'){
+	while((tamanho != 3 || palavra[0] != 'F' && palavra[1] != 'I' && palavra[2] != 'M')){
 		tamanho = tamanhoPalavra(palavra);
-		bool resultado = conferePalindromo(palavra, tamanho);
+		bool resultado = palindromoRec(palavra, tamanho, 0, tamanho - 1);
 		if(resultado){
 			printf("SIM\n");
 		}else{
 			printf("NAO\n");
 		}
-		fgets(palavra, sizeof(palavra), stdin);
+		scanf(" %s", palavra);
 		tamanho = tamanhoPalavra(palavra);
 	}
 	return 0;
