@@ -33,17 +33,16 @@ void removerQuebraLinha(char *str) {
     }
 }
 
-bool palindromoRec(char* s, int tam, int esq, int dir){
-	bool ehPalindromo = true;
-	if(esq < dir){
-		if(s[esq] != s[dir]){
-			ehPalindromo = false;
-			esq = dir;
-		}else{
-			palindromoRec(s, tam, esq + 1, dir - 1);
-		}
+bool palindromoRec(char* s, int esq, int dir){
+    bool resp;
+	if(esq >= dir){
+        resp = true;
+    }else if(s[esq] != s[dir]){
+        resp = false;
+    }else{
+		resp = palindromoRec(s, esq + 1, dir - 1);
 	}
-	return ehPalindromo;
+	return resp;
 }
 
 int main(){
@@ -52,7 +51,7 @@ int main(){
 	int tamanho = tamanhoPalavra(palavra);
 	while((tamanho != 3 || palavra[0] != 'F' && palavra[1] != 'I' && palavra[2] != 'M')){
 		tamanho = tamanhoPalavra(palavra);
-		bool resultado = palindromoRec(palavra, tamanho, 0, tamanho - 1);
+		bool resultado = palindromoRec(palavra, 0, tamanho - 1);
 		if(resultado){
 			printf("SIM\n");
 		}else{
