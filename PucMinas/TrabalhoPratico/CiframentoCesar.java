@@ -7,7 +7,7 @@ public class CiframentoCesar {
         String cifrada = "";
         for(int i = 0; i < palavra.length(); i++){
             char modificado = palavra.charAt(i);
-            if(modificado > 'A' && modificado < 'Z' || modificado > 'a' && modificado < 'z'){
+            if(modificado >= 'A' && modificado <= 'Z' || modificado >= 'a' && modificado <= 'z'){
                 modificado = (char) (modificado + chaveCifra);
                 cifrada += modificado;
             }else{
