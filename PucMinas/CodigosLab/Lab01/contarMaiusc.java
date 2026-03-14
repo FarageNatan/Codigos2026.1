@@ -1,4 +1,4 @@
-package PucMinas.CodigosLab;
+package PucMinas.CodigosLab.Lab01;
 
 import java.util.Scanner;
 
