@@ -50,11 +50,11 @@ public class ConfereString{
 			char letra = palavra.charAt(i);
 			if(letra == '.' || letra == ','){
 				ponto++;
-				if(ponto > 1){ // mais de um ponto ou vírgula não é real válido
+				if(ponto > 1){
 					ehReal = false;
-					break;
+					i = palavra.length();
 				}
-			} else if(!(letra >= '0' && letra <= '9')){ // se não for dígito
+			} else if(!(letra >= '0' && letra <= '9')){
 				ehReal = false;
 			}
 		}
