@@ -4,7 +4,6 @@ import java.util.Scanner;
 public class ConfereString{
 	
 	public static boolean confereVogal(String palavra){
-        System.out.println("Aqui1");
 		boolean soVogal = true;
 		for(int i = 0; i < palavra.length(); i++){
 			char letra = palavra.charAt(i);
@@ -17,12 +16,15 @@ public class ConfereString{
 	}//fim vogal
 
 	public static boolean confereConsoante(String palavra){
-        System.out.println("Aqui2");
 		boolean soConsoante = true;
 		for(int i = 0; i < palavra.length(); i++){
 			char letra = palavra.charAt(i);
-			if(letra == 'a' || letra == 'A' || letra == 'e' || letra == 'E' || letra == 'i' || letra == 'I' || letra == 'o' || letra == 'O' || letra == 'u' || letra == 'U'){
-				soConsoante= false;
+			if(letra == 'a' || letra == 'A' || letra == 'e' || letra == 'E' || letra == 'i' || letra == 'I' || letra == 'o' || letra == 'O' ||letra == 'u' || letra == 'U'){
+            	soConsoante = false;
+            	i = palavra.length();
+        	}
+			if(!((letra >= 'a' && letra <= 'z') || (letra >= 'A' && letra <= 'Z'))){
+				soConsoante = false;
 				i = palavra.length();
 			}
 		}//fim for
@@ -30,7 +32,6 @@ public class ConfereString{
 	}//fim consoante
 
 	public static boolean confereInteiro(String palavra){
-        System.out.println("Aqui3");
 		boolean ehInteiro = true;
 		for(int i = 0; i < palavra.length(); i++){
 			char letra = palavra.charAt(i);
@@ -43,19 +44,20 @@ public class ConfereString{
 	}
 
 	public static boolean confereReal(String palavra){
-        System.out.println("Aqui4");
 		boolean ehReal = true;
-		int ponto = 0;
+    	int ponto = 0;
 		for(int i = 0; i < palavra.length(); i++){
 			char letra = palavra.charAt(i);
 			if(letra == '.' || letra == ','){
 				ponto++;
-			}
-			if((!(letra >= '0' && letra <= '9')) || ponto > 1){
+				if(ponto > 1){ // mais de um ponto ou vírgula não é real válido
+					ehReal = false;
+					break;
+				}
+			} else if(!(letra >= '0' && letra <= '9')){ // se não for dígito
 				ehReal = false;
-			}	
-
-		}//fim for
+			}
+		}
 		return ehReal;
 	}
 
@@ -66,7 +68,7 @@ public class ConfereString{
 
 		String palavra = sc.nextLine();
 		
-		while(!(palavra.length() == 3 || palavra.charAt(0) == 'F' && palavra.charAt(1) == 'I' && palavra.charAt(2) == 'M')){
+		while(palavra.length() != 3 || palavra.charAt(0) != 'F' || palavra.charAt(1) != 'I' || palavra.charAt(2) != 'M'){
             boolean soVogais = confereVogal(palavra);
 		    boolean soConsoantes = confereConsoante(palavra);
 		    boolean ehInteiro = confereInteiro(palavra);
