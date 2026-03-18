@@ -1,4 +1,4 @@
-package PucMinas.TrabalhoPratico;
+//package PucMinas.TrabalhoPratico;
 import java.util.Scanner;
 
 public class CiframentoCesar {
@@ -6,12 +6,13 @@ public class CiframentoCesar {
     public static String cifraString(String palavra, int chaveCifra){
         String cifrada = "";
         for(int i = 0; i < palavra.length(); i++){
-            char modificado = palavra.charAt(i);
-            if(modificado >= 'A' && modificado <= 'Z' || modificado >= 'a' && modificado <= 'z'){
-                modificado = (char) (modificado + chaveCifra);
+            char original = palavra.charAt(i);
+            char modificado = original;
+            if(original >= 0 && original <= 127){
+                modificado = (char) ((modificado + chaveCifra) % 128); 
                 cifrada += modificado;
             }else{
-                cifrada += modificado;
+                cifrada += original;
             }
         }
         return cifrada;
