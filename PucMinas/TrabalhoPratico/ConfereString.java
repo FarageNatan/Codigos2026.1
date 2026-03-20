@@ -1,4 +1,4 @@
-package PucMinas.TrabalhoPratico;
+
 import java.util.Scanner;
 
 public class ConfereString{
