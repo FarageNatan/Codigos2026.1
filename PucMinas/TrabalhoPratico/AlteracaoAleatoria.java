@@ -24,12 +24,12 @@ public class AlteracaoAleatoria {
 
         Random gerador = new Random();
         gerador.setSeed(4);
-        char letra1 = sortearLetra(gerador);
-        char letra2 = sortearLetra(gerador);
-
+        
         String palavra = sc.nextLine();
         while(palavra.length() != 3 || palavra.charAt(0) != 'F' && palavra.charAt(1) != 'I' && palavra.charAt(2) != 'M'){
             
+            char letra1 = sortearLetra(gerador);
+            char letra2 = sortearLetra(gerador);
             String resultado = alterar(palavra, letra1, letra2);
             System.out.println(resultado);
             palavra = sc.nextLine();
