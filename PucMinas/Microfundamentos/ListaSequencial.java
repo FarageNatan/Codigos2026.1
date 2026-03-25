@@ -79,11 +79,8 @@ class Lista{
         return resp;
     }
 
-
-    
-    
     public void mostrar(){
-        for(int i = 0; i < array.length; i++){
+        for(int i = 0; i < n; i++){
             System.out.print("[ " + array[i] + " ]");
         }
         System.out.println(); //Pula linha
@@ -91,8 +88,6 @@ class Lista{
 
     
 }
-
-
 
 public class ListaSequencial {
     
@@ -112,14 +107,11 @@ public class ListaSequencial {
         
         lista.inserirFim(sc.nextInt());
         lista.mostrar();
-        
-        
 
-
+        lista.removerInicio();
+        lista.mostrar();
+        
         sc.close();
     }
-
-
-
 
 }
