@@ -70,6 +70,7 @@ class Lista{
     public int removerInicio(){
         if(n == 0){
             System.out.println("Lista Vazia");
+            return 0;
         }
         int resp = array[0];
         for(int i = 1; i < n; i++){
@@ -79,14 +80,34 @@ class Lista{
         return resp;
     }
 
+    public int removerFim(){
+        if(n == 0){
+            System.out.println("Lista Vazia");
+            return 0;
+        }
+        return array[--n];
+    }
+
+    public int removerPos(int pos){
+        if(n == 0 || pos < 0 || pos >= n){
+            System.out.println("Lista vazia ou posição invalida");
+        }
+
+        int resp = array[pos];
+        n--;
+        
+        for(int i = pos; i < n; i++){
+            array[i] = array[i + 1];
+        }
+        return resp;
+    }
+
     public void mostrar(){
         for(int i = 0; i < n; i++){
             System.out.print("[ " + array[i] + " ]");
         }
         System.out.println(); //Pula linha
     }
-
-    
 }
 
 public class ListaSequencial {
@@ -102,15 +123,21 @@ public class ListaSequencial {
         lista.inserirInicio(sc.nextInt());
         lista.mostrar();
         
-        lista.inserirInicio(sc.nextInt());
-        lista.mostrar();
-        
         lista.inserirFim(sc.nextInt());
         lista.mostrar();
-
-        lista.removerInicio();
-        lista.mostrar();
         
+        int x1 = lista.removerInicio();
+        lista.mostrar();
+
+        lista.inserirPosicao(sc.nextInt(), 2);
+        lista.mostrar();
+
+        int x2 = lista.removerFim();
+        lista.mostrar();
+ 
+        System.out.println("Os elementos removidos da lista foram: " + x1 + " e " + x2);
+        System.out.println("A lista final ficou assim: ");
+        lista.mostrar();
         sc.close();
     }
 
