@@ -43,9 +43,14 @@ bool placaNova(char* placa, int tam){
         }
         if(!(placa[3] >= '0' && placa[3] <= '9')){
             ehNova = false;
-        }else if(!(placa[4] >= 'A' && placa[4] <= 'Z')){
+        }
+        if(!(placa[4] >= 'A' && placa[4] <= 'Z')){
             ehNova = false;
-        }else if(!((placa[5] >= '0' && placa[5] <= '9') || (placa[5] >= '0' && placa[5] <= '9') )){
+        }
+        if(!(placa[5] >= '0' && placa[5] <= '9')){
+            ehNova = false;
+        }
+        if(!(placa[6] >= '0' && placa[6] <= '9')){
             ehNova = false;
         }
     }
