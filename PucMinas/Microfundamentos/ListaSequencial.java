@@ -139,6 +139,16 @@ class Lista{
         }
     }
 
+    public int paresAndMultiplos(){
+        int quantidade = 0;
+        for(int i = 0; i < n; i++){
+            if(array[i] % 2 == 0 && array[i] % 5 == 0){
+                quantidade++;
+            }
+        }
+        return quantidade;
+    }
+
 }
 
 public class ListaSequencial {
@@ -183,8 +193,13 @@ public class ListaSequencial {
         // System.out.println("Os elementos removidos da lista foram: " + x1 + " e " + x2);
         System.out.println("A lista final ficou assim: ");
         lista.mostrar();
+
         System.out.println("A soma dos elementos da lista eh igual a: " + soma);
         System.out.println("O maior elemento da lista eh: " + maior);
+
+        int paresMultiplosCinco = lista.paresAndMultiplos();
+        System.out.println("Elementos que são pares e multiplos de 5: " + paresMultiplosCinco);
+
         lista.inverterElementos();
         System.out.println("A lista invertida ficou: ");
         lista.mostrar();
