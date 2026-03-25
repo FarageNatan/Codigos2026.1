@@ -121,13 +121,24 @@ class Lista{
 
     public int maiorDaLista(){
         int maior = array[0];
-        for(int i = 0; i < n; i++){
+        for(int i = 1; i < n; i++){
             if(array[i] > maior){
                 maior = array[i];
             }
         }
         return maior;
     }
+
+    public void inverterElementos(){
+        int j = n - 1;
+        for(int i = 0; i <= j; i++){
+            int tmp = array[i];
+            array[i] = array[j];
+            array[j] = tmp;
+            j--;
+        }
+    }
+
 }
 
 public class ListaSequencial {
@@ -158,18 +169,25 @@ public class ListaSequencial {
         lista.inserirPosicao(sc.nextInt(), 1);
         lista.mostrar();
 
-        System.out.println("Remover Fim");
-        int x2 = lista.removerFim();
+        System.out.println("Inserir inicio ");
+        lista.inserirInicio(sc.nextInt());
+        lista.mostrar();
+
+        System.out.println("Inserir Fim: ");
+        lista.inserirFim(sc.nextInt());
         lista.mostrar();
 
         int soma = lista.somaElementos();
         int maior = lista.maiorDaLista();
 
-        System.out.println("Os elementos removidos da lista foram: " + x1 + " e " + x2);
+        // System.out.println("Os elementos removidos da lista foram: " + x1 + " e " + x2);
         System.out.println("A lista final ficou assim: ");
         lista.mostrar();
         System.out.println("A soma dos elementos da lista eh igual a: " + soma);
         System.out.println("O maior elemento da lista eh: " + maior);
+        lista.inverterElementos();
+        System.out.println("A lista invertida ficou: ");
+        lista.mostrar();
 
         sc.close();
     }
