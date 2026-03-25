@@ -108,6 +108,16 @@ class Lista{
         }
         System.out.println(); //Pula linha
     }
+
+    /* Métodos Complementares propostos na atividade do Microfundamento */
+
+    public int somaElementos(){
+        int soma = 0;
+        for(int i = 0; i < n; i++){
+            soma += array[i];
+        }
+        return soma;
+    }
 }
 
 public class ListaSequencial {
@@ -115,30 +125,39 @@ public class ListaSequencial {
     public static void main(String[] args){
         Scanner sc = new Scanner(System.in);
 
-        Lista lista = new Lista(6);
-            
+        System.out.println("Tamanho Lista: ");
+        Lista lista = new Lista(sc.nextInt());
+        
+        System.out.println("Inserir inicio ");
+        lista.inserirInicio(sc.nextInt());
+        lista.mostrar();
+
+        System.out.println("Inserir inicio ");
         lista.inserirInicio(sc.nextInt());
         lista.mostrar();
         
-        lista.inserirInicio(sc.nextInt());
-        lista.mostrar();
-        
+        System.out.println("Inserir Fim: ");
         lista.inserirFim(sc.nextInt());
         lista.mostrar();
         
+        System.out.println("Remover Inicio");
         int x1 = lista.removerInicio();
         lista.mostrar();
 
-        lista.inserirPosicao(sc.nextInt(), 2);
+        System.out.println("Inserir na posicao: ");
+        lista.inserirPosicao(sc.nextInt(), 1);
         lista.mostrar();
 
+        System.out.println("Remover Fim");
         int x2 = lista.removerFim();
         lista.mostrar();
- 
+
+        int soma = lista.somaElementos();
+
         System.out.println("Os elementos removidos da lista foram: " + x1 + " e " + x2);
         System.out.println("A lista final ficou assim: ");
         lista.mostrar();
+        System.out.println("A soma dos elementos da lista eh igual a: " + soma);
         sc.close();
     }
-
 }
