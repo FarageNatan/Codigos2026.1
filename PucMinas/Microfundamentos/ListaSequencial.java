@@ -118,6 +118,16 @@ class Lista{
         }
         return soma;
     }
+
+    public int maiorDaLista(){
+        int maior = array[0];
+        for(int i = 0; i < n; i++){
+            if(array[i] > maior){
+                maior = array[i];
+            }
+        }
+        return maior;
+    }
 }
 
 public class ListaSequencial {
@@ -153,11 +163,14 @@ public class ListaSequencial {
         lista.mostrar();
 
         int soma = lista.somaElementos();
+        int maior = lista.maiorDaLista();
 
         System.out.println("Os elementos removidos da lista foram: " + x1 + " e " + x2);
         System.out.println("A lista final ficou assim: ");
         lista.mostrar();
         System.out.println("A soma dos elementos da lista eh igual a: " + soma);
+        System.out.println("O maior elemento da lista eh: " + maior);
+
         sc.close();
     }
 }
