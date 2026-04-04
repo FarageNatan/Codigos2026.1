@@ -1,4 +1,4 @@
-package PucMinas.Microfundamentos;
+package PucMinas.Microfundamentos.Ordenacao_Pesquisa;
 import java.util.Scanner;
 
 public class ordenacaoSelecao {
