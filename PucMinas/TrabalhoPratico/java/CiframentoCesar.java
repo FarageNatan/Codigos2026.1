@@ -1,3 +1,4 @@
+package java;
 //package PucMinas.TrabalhoPratico;
 import java.util.Scanner;
 
