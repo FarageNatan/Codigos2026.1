@@ -37,7 +37,7 @@ int main(){
         numero[tam - 1] = '\0';
         tam--;
     }
-    while(!(numero[0] == 'F' && numero[1] == 'I' && numero[2] == 'M' && tam == 3)){
+    while(numero != EOF){
         int num = transformaNumero(numero);
         int soma = somaDigitos(num);
         printf("%d\n", soma);
