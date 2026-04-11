@@ -31,23 +31,17 @@ int transformaNumero(char* string){
 
 int main(){
     char* numero = malloc(1000 * sizeof(char));
-    fgets(numero, 1000, stdin);
-    int tam = tamanhoString(numero);
-    if (tam > 0 && numero[tam - 1] == '\n') {
-        numero[tam - 1] = '\0';
-        tam--;
-    }
-    while(numero != EOF){
+
+    while(fgets(numero, 1000, stdin) != NULL){
+
+        int tam = tamanhoString(numero);
+        if (tam > 0 && numero[tam - 1] == '\n') {
+            numero[tam - 1] = '\0';
+        }
+
         int num = transformaNumero(numero);
         int soma = somaDigitos(num);
         printf("%d\n", soma);
-
-        fgets(numero, 1000, stdin);
-        tam = tamanhoString(numero);
-        if (tam > 0 && numero[tam - 1] == '\n') {
-            numero[tam - 1] = '\0';
-            tam--;
-        }
     }
 
     free(numero);
