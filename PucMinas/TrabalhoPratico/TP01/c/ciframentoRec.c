@@ -26,11 +26,10 @@ int ehFim(char* str){
 
 int main(){
     char linha[1000];
-    int tam;
+    int tam = 0;
 
     fgets(linha, 1000, stdin);
 
-    tam = 0;
     while(linha[tam] != '\0') tam++;
     if(tam > 0 && linha[tam-1] == '\n'){
         linha[tam-1] = '\0';
