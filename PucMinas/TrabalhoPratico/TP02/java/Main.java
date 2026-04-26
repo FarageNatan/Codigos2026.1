@@ -1,12 +1,9 @@
-package PucMinas.TrabalhoPratico.TP02;
+//package PucMinas.TrabalhoPratico.TP02.java;
 
 import java.io.IOException;
 import java.util.Scanner;
 import java.io.File;
 
-// ─────────────────────────────────────────────
-// Classe Data
-// ─────────────────────────────────────────────
 class Data {
     private int ano;
     private int mes;
@@ -64,9 +61,6 @@ class Data {
     }
 }
 
-// ─────────────────────────────────────────────
-// Classe Hora
-// ─────────────────────────────────────────────
 class Hora {
     private int hora;
     private int minuto;
@@ -154,7 +148,6 @@ class Restaurante {
     public Data     getDataAbertura()      { return dataAbertura; }
     public Boolean  getAberto()            { return aberto; }
 
-    // ── Método formatar ───────────────────────
     // Formato: [id ## nome ## cidade ## capacidade ## avaliacao ## [tipos] ## faixaPreco ## HH:mm-HH:mm ## DD/MM/YYYY ## aberto]
     public String formatar() {
         String tipos = "[";
@@ -347,15 +340,13 @@ class ColecaoRestaurantes {
     // Lê o dataset do arquivo CSV e retorna a coleção com os restaurantes
     public static ColecaoRestaurantes lerCsv() throws IOException {
         ColecaoRestaurantes colecao = new ColecaoRestaurantes(0);
-        colecao.lerCsv("./PucMinas/TrabalhoPratico/TP02/dataset/restaurantes.csv");
-        //colecao.lerCsv("/tmp/restaurantes.csv");
+        //colecao.lerCsv("./PucMinas/TrabalhoPratico/TP02/dataset/restaurantes.csv");
+        colecao.lerCsv("/tmp/restaurantes.csv");
         return colecao;
     }
 }
 
-// ─────────────────────────────────────────────
-// Classe Main
-// ─────────────────────────────────────────────
+
 public class Main {
 
     public static void main(String[] args) throws IOException {
@@ -363,14 +354,15 @@ public class Main {
         ColecaoRestaurantes colecao = ColecaoRestaurantes.lerCsv();
         Restaurante[] restaurantes = colecao.getRestaurantes();
 
-        int id = 0;
-
-        while (id != -1){
-            id = sc.nextInt();
-
-            if (id != -1 && id >= 0 && id < restaurantes.length) {
-                restaurantes[id].formatar();
+        int id = sc.nextInt();
+ 
+        while (id != -1) {
+            for (int i = 0; i < colecao.getTamanho(); i++) {
+                if (restaurantes[i].getId() == id) {
+                    System.out.println(restaurantes[i].formatar());
+                }
             }
+            id = sc.nextInt();
         }
 
         sc.close();
