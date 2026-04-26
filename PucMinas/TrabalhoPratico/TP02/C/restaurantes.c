@@ -153,6 +153,25 @@ void formatarRestaurante(Restaurante *r) {
            r->aberto ? "true" : "false");
 }
 
+void ordenarPorNome(Restaurante lista[], int total) {
+    int i, j, minIdx;
+    Restaurante temp;
+
+    for (i = 0; i < total - 1; i++) {
+        minIdx = i;
+        for (j = i + 1; j < total; j++) {
+            if (strcmp(lista[j].nome, lista[minIdx].nome) < 0) {
+                minIdx = j;
+            }
+        }
+        if (minIdx != i) {
+            temp = lista[i];
+            lista[i] = lista[minIdx];
+            lista[minIdx] = temp;
+        }
+    }
+}
+
 // --- Main ---
 
 int main() {
@@ -176,17 +195,28 @@ int main() {
 
     fclose(arquivo);
 
+    // Lê todos os IDs até -1 e guarda os restaurantes encontrados
+    Restaurante selecionados[MAX_REGISTROS];
+    int totalSelecionados = 0;
+
     int buscaId;
     scanf("%d", &buscaId);
 
     while (buscaId != -1) {
         for (int i = 0; i < total; i++) {
             if (lista[i].id == buscaId) {
-                formatarRestaurante(&lista[i]);
+                selecionados[totalSelecionados++] = lista[i];
                 break;
             }
         }
         scanf("%d", &buscaId);
+    }
+
+    // Ordena os selecionados por nome e imprime
+    ordenarPorNome(selecionados, totalSelecionados);
+
+    for (int i = 0; i < totalSelecionados; i++) {
+        formatarRestaurante(&selecionados[i]);
     }
 
     return 0;
