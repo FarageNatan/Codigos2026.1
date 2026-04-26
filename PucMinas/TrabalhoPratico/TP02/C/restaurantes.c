@@ -172,11 +172,124 @@ void ordenarPorNome(Restaurante lista[], int total) {
     }
 }
 
+int buscaBinaria(Restaurante lista[], int total, char *nome) {
+    int inicio = 0, fim = total - 1;
+
+    while (inicio <= fim) {
+        int meio = (inicio + fim) / 2;
+        int cmp = strcmp(lista[meio].nome, nome);
+
+        if (cmp == 0) {
+            return meio;
+        } else if (cmp < 0) {
+            inicio = meio + 1;
+        } else {
+            fim = meio - 1;
+        }
+    }
+
+    return -1;
+}
+
+int compararRestaurante(Restaurante *a, Restaurante *b) {
+    if (a->avaliacao < b->avaliacao) return -1;
+    if (a->avaliacao > b->avaliacao) return 1;
+    // Empate: ordena por nome
+    return strcmp(a->nome, b->nome);
+}
+
+int particionar(Restaurante lista[], int inicio, int fim) {
+    Restaurante pivo = lista[fim];
+    int i = inicio - 1;
+
+    for (int j = inicio; j < fim; j++) {
+        if (compararRestaurante(&lista[j], &pivo) <= 0) {
+            i++;
+            Restaurante temp = lista[i];
+            lista[i] = lista[j];
+            lista[j] = temp;
+        }
+    }
+
+    Restaurante temp = lista[i + 1];
+    lista[i + 1] = lista[fim];
+    lista[fim] = temp;
+
+    return i + 1;
+}
+
+void quicksort(Restaurante lista[], int inicio, int fim) {
+    if (inicio < fim) {
+        int pivo = particionar(lista, inicio, fim);
+        quicksort(lista, inicio, pivo - 1);
+        quicksort(lista, pivo + 1, fim);
+    }
+}
+
+void countingSort(Restaurante lista[], int total) {
+    // Encontra o maior e menor valor de capacidade
+    int minCap = lista[0].capacidade;
+    int maxCap = lista[0].capacidade;
+
+    for (int i = 1; i < total; i++) {
+        if (lista[i].capacidade < minCap) minCap = lista[i].capacidade;
+        if (lista[i].capacidade > maxCap) maxCap = lista[i].capacidade;
+    }
+
+    int intervalo = maxCap - minCap + 1;
+
+    // Conta as ocorrências de cada capacidade
+    int *contagem = (int *)malloc(intervalo * sizeof(int));
+    for (int i = 0; i < intervalo; i++) contagem[i] = 0;
+    for (int i = 0; i < total; i++) contagem[lista[i].capacidade - minCap]++;
+
+    // Acumula as contagens
+    for (int i = 1; i < intervalo; i++) contagem[i] += contagem[i - 1];
+
+    // Monta o array de saída
+    Restaurante saida[MAX_REGISTROS];
+    for (int i = total - 1; i >= 0; i--) {
+        int pos = contagem[lista[i].capacidade - minCap] - 1;
+        saida[pos] = lista[i];
+        contagem[lista[i].capacidade - minCap]--;
+    }
+
+    // Copia de volta para a lista original
+    for (int i = 0; i < total; i++) lista[i] = saida[i];
+    
+    free(contagem);
+}
+
+// --- Pilha ---
+
+typedef struct {
+    Restaurante dados[MAX_REGISTROS];
+    int topo;
+} Pilha;
+
+void inicializarPilha(Pilha *p) {
+    p->topo = -1;
+}
+
+int pilhaVazia(Pilha *p) {
+    return p->topo == -1;
+}
+
+void empilhar(Pilha *p, Restaurante r) {
+    if (p->topo < MAX_REGISTROS - 1) {
+        p->dados[++p->topo] = r;
+    }
+}
+
+Restaurante desempilhar(Pilha *p) {
+    return p->dados[p->topo--];
+}
+
 // --- Main ---
 
 int main() {
-    //FILE *arquivo = fopen("../dataset/restaurantes.csv", "r");
     FILE *arquivo = fopen("/tmp/restaurantes.csv", "r");
+    //FILE *arquivo = fopen("../dataset/restaurantes.csv", "r");
     if (!arquivo) {
         printf("Erro ao abrir o arquivo\n");
         return 1;
@@ -195,9 +308,9 @@ int main() {
 
     fclose(arquivo);
 
-    // Lê todos os IDs até -1 e guarda os restaurantes encontrados
-    Restaurante selecionados[MAX_REGISTROS];
-    int totalSelecionados = 0;
+    // Parte 1: lê IDs e empilha os restaurantes encontrados
+    Pilha pilha;
+    inicializarPilha(&pilha);
 
     int buscaId;
     scanf("%d", &buscaId);
@@ -205,18 +318,41 @@ int main() {
     while (buscaId != -1) {
         for (int i = 0; i < total; i++) {
             if (lista[i].id == buscaId) {
-                selecionados[totalSelecionados++] = lista[i];
+                empilhar(&pilha, lista[i]);
                 break;
             }
         }
         scanf("%d", &buscaId);
     }
 
-    // Ordena os selecionados por nome e imprime
-    ordenarPorNome(selecionados, totalSelecionados);
+    // Parte 2: lê quantidade de operações e processa
+    int n;
+    scanf("%d", &n);
 
-    for (int i = 0; i < totalSelecionados; i++) {
-        formatarRestaurante(&selecionados[i]);
+    char comando[5];
+    for (int i = 0; i < n; i++) {
+        scanf("%s", comando);
+
+        if (strcmp(comando, "I") == 0) {
+            int id;
+            scanf("%d", &id);
+            for (int j = 0; j < total; j++) {
+                if (lista[j].id == id) {
+                    empilhar(&pilha, lista[j]);
+                    break;
+                }
+            }
+        } else if (strcmp(comando, "R") == 0) {
+            if (!pilhaVazia(&pilha)) {
+                Restaurante r = desempilhar(&pilha);
+                printf("(R)%s\n", r.nome);
+            }
+        }
+    }
+
+    // Imprime do topo à base
+    while (!pilhaVazia(&pilha)) {
+        formatarRestaurante(&pilha.dados[pilha.topo--]);
     }
 
     return 0;
