@@ -581,29 +581,78 @@ class Lista {
     }
 }
 
-public class Main {
+class FilaCircular {
+    private int CAPACIDADE = 5;
+    private Restaurante[] fila;
+    private int inicio;   
+    private int fim;      
+    private int tamanho;  
+ 
+    public FilaCircular() {
+        this.fila    = new Restaurante[CAPACIDADE];
+        this.inicio  = 0;
+        this.fim     = 0;
+        this.tamanho = 0;
+    }
+ 
+    public int getTamanho()    { return tamanho; }
+    public boolean estaCheia() { return tamanho == CAPACIDADE; }
+    public boolean estaVazia() { return tamanho == 0; }
+ 
+    public Restaurante getRestaurante(int i) {
+        return fila[(inicio + i) % CAPACIDADE];
+    }
+ 
+    public Restaurante remover() {
+        Restaurante removido = fila[inicio];
+        inicio  = (inicio + 1) % CAPACIDADE;
+        tamanho--;
+        return removido;
+    }
 
+    public void inserir(Restaurante restaurante) {
+        if (estaCheia()) {
+            Restaurante removido = remover();
+            System.out.println("(R)" + removido.getNome());
+        }
+        fila[fim]  = restaurante;
+        fim        = (fim + 1) % CAPACIDADE;
+        tamanho++;
+    }
+ 
+    public int mediaAnoAbertura() {
+        int soma = 0;
+        for (int i = 0; i < tamanho; i++) {
+            soma += getRestaurante(i).getDataAbertura().getAno();
+        }
+        return Math.round((float) soma / tamanho);
+    }
+}
+
+public class Main {
+ 
     public static void main(String[] args) throws IOException {
         Scanner sc = new Scanner(System.in);
         ColecaoRestaurantes colecao = ColecaoRestaurantes.lerCsv();
         Restaurante[] todos = colecao.getRestaurantes();
  
-        // ── Parte 1: lê IDs e insere ao final da Lista ─────────────────
-        Lista lista = new Lista(colecao.getTamanho());
+        // ── Parte 1: lê IDs e insere ao final da Fila ──────────────────
+        FilaCircular fila = new FilaCircular();
  
         int id = sc.nextInt();
         sc.nextLine();
         while (id != -1) {
             for (int i = 0; i < colecao.getTamanho(); i++) {
                 if (todos[i].getId() == id) {
-                    lista.inserirFim(todos[i]);
+                    fila.inserir(todos[i]);
+                    System.out.println("(I)" + fila.mediaAnoAbertura());
                 }
             }
             id = sc.nextInt();
             sc.nextLine();
         }
  
-        // ── Parte 2: lê e processa comandos de inserção/remoção ────────
+        // ── Parte 2: lê e processa comandos I e R ──────────────────────
         int n = sc.nextInt();
         sc.nextLine();
  
@@ -612,40 +661,21 @@ public class Main {
             String[] partes = Restaurante.divideCampo(linha, ' ');
             String comando  = partes[0];
  
-            if (comando.compareTo("II") == 0) {
+            if (comando.compareTo("I") == 0) {
                 int idInserir = Restaurante.converteInteiro(partes[1]);
                 Restaurante r = colecao.buscarPorId(idInserir);
-                lista.inserirInicio(r);
+                fila.inserir(r);
+                System.out.println("(I)" + fila.mediaAnoAbertura());
  
-            } else if (comando.compareTo("I*") == 0) {
-                int posicao   = Restaurante.converteInteiro(partes[1]);
-                int idInserir = Restaurante.converteInteiro(partes[2]);
-                Restaurante r = colecao.buscarPorId(idInserir);
-                lista.inserir(r, posicao);
- 
-            } else if (comando.compareTo("IF") == 0) {
-                int idInserir = Restaurante.converteInteiro(partes[1]);
-                Restaurante r = colecao.buscarPorId(idInserir);
-                lista.inserirFim(r);
- 
-            } else if (comando.compareTo("RI") == 0) {
-                Restaurante removido = lista.removerInicio();
-                System.out.println("(R)" + removido.getNome());
- 
-            } else if (comando.compareTo("R*") == 0) {
-                int posicao  = Restaurante.converteInteiro(partes[1]);
-                Restaurante removido = lista.remover(posicao);
-                System.out.println("(R)" + removido.getNome());
- 
-            } else if (comando.compareTo("RF") == 0) {
-                Restaurante removido = lista.removerFim();
+            } else if (comando.compareTo("R") == 0) {
+                Restaurante removido = fila.remover();
                 System.out.println("(R)" + removido.getNome());
             }
         }
  
-        // ── Saída final: lista do primeiro ao último ────────────────────
-        for (int i = 0; i < lista.getTamanho(); i++) {
-            System.out.println(lista.getRestaurante(i).formatar());
+        // ── Saída final: fila do primeiro ao último ─────────────────────
+        for (int i = 0; i < fila.getTamanho(); i++) {
+            System.out.println(fila.getRestaurante(i).formatar());
         }
  
         sc.close();
