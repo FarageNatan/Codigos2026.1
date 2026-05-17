@@ -303,6 +303,155 @@ void insertionSortParcial(Restaurante lista[], int total, int k) {
     }
 }
 
+int compararData(Data a, Data b) {
+    if (a.ano != b.ano) return a.ano - b.ano;
+    if (a.mes != b.mes) return a.mes - b.mes;
+    return a.dia - b.dia;
+}
+
+int compararHeap(Restaurante *a, Restaurante *b) {
+    int cmp = compararData(a->dataAbertura, b->dataAbertura);
+    if (cmp != 0) return cmp;
+    return strcmp(a->nome, b->nome);
+}
+
+void heapificar(Restaurante heap[], int total, int i) {
+    int menor = i;
+    int esq = 2 * i + 1;
+    int dir = 2 * i + 2;
+
+    if (esq < total && compararHeap(&heap[esq], &heap[menor]) < 0)
+        menor = esq;
+    if (dir < total && compararHeap(&heap[dir], &heap[menor]) < 0)
+        menor = dir;
+
+    if (menor != i) {
+        Restaurante temp = heap[i];
+        heap[i] = heap[menor];
+        heap[menor] = temp;
+        heapificar(heap, total, menor);
+    }
+}
+
+void construirHeap(Restaurante heap[], int total) {
+    for (int i = total / 2 - 1; i >= 0; i--)
+        heapificar(heap, total, i);
+}
+
+Restaurante extrairMinimo(Restaurante heap[], int *total) {
+    Restaurante min = heap[0];
+    heap[0] = heap[--(*total)];
+    heapificar(heap, *total, 0);
+    return min;
+}
+
+typedef struct {
+    Restaurante *dados;
+    int tamanho;
+    int capacidade;
+} Lista;
+
+void inicializarLista(Lista *l) {
+    l->capacidade = 10;
+    l->tamanho = 0;
+    l->dados = (Restaurante *)malloc(l->capacidade * sizeof(Restaurante));
+}
+
+void expandirLista(Lista *l) {
+    if (l->tamanho >= l->capacidade) {
+        l->capacidade *= 2;
+        l->dados = (Restaurante *)realloc(l->dados, l->capacidade * sizeof(Restaurante));
+    }
+}
+
+void inserirInicio(Lista *l, Restaurante r) {
+    expandirLista(l);
+    for (int i = l->tamanho; i > 0; i--)
+        l->dados[i] = l->dados[i - 1];
+    l->dados[0] = r;
+    l->tamanho++;
+}
+
+void inserir(Lista *l, Restaurante r, int posicao) {
+    if (posicao < 0 || posicao > l->tamanho) return;
+    expandirLista(l);
+    for (int i = l->tamanho; i > posicao; i--)
+        l->dados[i] = l->dados[i - 1];
+    l->dados[posicao] = r;
+    l->tamanho++;
+}
+
+void inserirFim(Lista *l, Restaurante r) {
+    expandirLista(l);
+    l->dados[l->tamanho++] = r;
+}
+
+Restaurante removerInicio(Lista *l) {
+    Restaurante r = l->dados[0];
+    for (int i = 0; i < l->tamanho - 1; i++)
+        l->dados[i] = l->dados[i + 1];
+    l->tamanho--;
+    return r;
+}
+
+Restaurante removerPosicao(Lista *l, int posicao) {
+    Restaurante r = l->dados[posicao];
+    for (int i = posicao; i < l->tamanho - 1; i++)
+        l->dados[i] = l->dados[i + 1];
+    l->tamanho--;
+    return r;
+}
+
+Restaurante removerFim(Lista *l) {
+    return l->dados[--l->tamanho];
+}
+
+typedef struct No {
+    Restaurante dado;
+    struct No *proximo;
+} No;
+
+typedef struct {
+    No *inicio;
+    No *fim;
+    int tamanho;
+} Fila;
+
+void inicializarFila(Fila *f) {
+    f->inicio = NULL;
+    f->fim = NULL;
+    f->tamanho = 0;
+}
+
+int filaVazia(Fila *f) {
+    return f->inicio == NULL;
+}
+
+void enfileirar(Fila *f, Restaurante r) {
+    No *novo = (No *)malloc(sizeof(No));
+    novo->dado = r;
+    novo->proximo = NULL;
+
+    if (filaVazia(f)) {
+        f->inicio = novo;
+        f->fim = novo;
+    } else {
+        f->fim->proximo = novo;
+        f->fim = novo;
+    }
+    f->tamanho++;
+}
+
+Restaurante desenfileirar(Fila *f) {
+    No *temp = f->inicio;
+    Restaurante r = temp->dado;
+    f->inicio = f->inicio->proximo;
+    if (f->inicio == NULL) f->fim = NULL;
+    free(temp);
+    f->tamanho--;
+    return r;
+}
+
 int main() {
     FILE *arquivo = fopen("/tmp/restaurantes.csv", "r");
     //FILE *arquivo = fopen("../dataset/restaurantes.csv", "r");
@@ -311,40 +460,72 @@ int main() {
         return 1;
     }
 
-    Restaurante lista[MAX_REGISTROS];
+    Restaurante todos[MAX_REGISTROS];
+    //Restaurante lista[MAX_REGISTROS];
     int total = 0;
     char linha[TAM_LINHA];
 
     fgets(linha, TAM_LINHA, arquivo);
 
     while (fgets(linha, TAM_LINHA, arquivo) && total < MAX_REGISTROS) {
-        if (lerRestaurante(linha, &lista[total]))
+        if (lerRestaurante(linha, &todos[total]))
             total++;
     }
 
     fclose(arquivo);
 
-    Restaurante selecionados[MAX_REGISTROS];
-    int totalSelecionados = 0;
+    // Parte 1: lê IDs e enfileira
+    Fila fila;
+    inicializarFila(&fila);
 
     int buscaId;
     scanf("%d", &buscaId);
 
     while (buscaId != -1) {
         for (int i = 0; i < total; i++) {
-            if (lista[i].id == buscaId) {
-                selecionados[totalSelecionados++] = lista[i];
+            if (todos[i].id == buscaId) {
+                enfileirar(&fila, todos[i]);
                 break;
             }
         }
         scanf("%d", &buscaId);
     }
 
-    insertionSortParcial(selecionados, totalSelecionados, 10);
+    // Parte 2: lê quantidade de operações e processa
+    int n;
+    scanf("%d", &n);
 
-    for (int i = 0; i < totalSelecionados; i++) {
-        formatarRestaurante(&selecionados[i]);
+    char comando[5];
+    for (int i = 0; i < n; i++) {
+        scanf("%s", comando);
+
+        if (strcmp(comando, "I") == 0) {
+            int id;
+            scanf("%d", &id);
+            for (int j = 0; j < total; j++) {
+                if (todos[j].id == id) {
+                    enfileirar(&fila, todos[j]);
+                    break;
+                }
+            }
+        } else if (strcmp(comando, "R") == 0) {
+            if (!filaVazia(&fila)) {
+                Restaurante r = desenfileirar(&fila);
+                printf("(R)%s\n", r.nome);
+            }
+        }
     }
+
+    // Imprime do primeiro ao último
+    No *atual = fila.inicio;
+    while (atual != NULL) {
+        formatarRestaurante(&atual->dado);
+        atual = atual->proximo;
+    }
+
+    // Libera memória
+    while (!filaVazia(&fila))
+        desenfileirar(&fila);
 
     return 0;
 }

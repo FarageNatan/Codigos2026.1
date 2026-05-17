@@ -683,6 +683,143 @@ class FilaCircular {
     }
 }
 
+class Pilha {
+    private int tamanho;
+    private int capacidade;
+    private Restaurante[] pilha;
+ 
+    public Pilha(int capacidadeInicial) {
+        this.tamanho    = 0;
+        this.capacidade = capacidadeInicial;
+        this.pilha      = new Restaurante[capacidadeInicial];
+    }
+ 
+    public int getTamanho()    { return tamanho; }
+    public boolean estaVazia() { return tamanho == 0; }
+ 
+    private void expandir() {
+        capacidade = capacidade * 2;
+        Restaurante[] nova = new Restaurante[capacidade];
+        for (int i = 0; i < tamanho; i++) {
+            nova[i] = pilha[i];
+        }
+        pilha = nova;
+    }
+ 
+    public void inserir(Restaurante restaurante) {
+        if (tamanho == capacidade) {
+            expandir();
+        }
+        pilha[tamanho] = restaurante;
+        tamanho++;
+    }
+ 
+    public Restaurante remover() {
+        tamanho--;
+        return pilha[tamanho];
+    }
+ 
+    public Restaurante getRestaurante(int i) { return pilha[i]; }
+}
+
+class No {
+    Restaurante restaurante;
+    No anterior;
+    No proximo;
+ 
+    public No(Restaurante restaurante) {
+        this.restaurante = restaurante;
+        this.anterior    = null;
+        this.proximo     = null;
+    }
+}
+
+class ListaEncadeada {
+    private No cabeca;
+    private int tamanho;
+ 
+    public ListaEncadeada() {
+        cabeca         = new No(null);
+        cabeca.proximo = null;
+        cabeca.anterior = null;
+        tamanho        = 0;
+    }
+ 
+    public int getTamanho() { return tamanho; }
+ 
+    private No getNo(int posicao) {
+        No atual = cabeca.proximo;
+        for (int i = 0; i < posicao; i++) {
+            atual = atual.proximo;
+        }
+        return atual;
+    }
+ 
+    private No getUltimo() {
+        No atual = cabeca;
+        while (atual.proximo != null) {
+            atual = atual.proximo;
+        }
+        return atual;
+    }
+ 
+    private void inserirApos(No anteriorNo, Restaurante restaurante) {
+        No novo         = new No(restaurante);
+        novo.proximo    = anteriorNo.proximo;
+        novo.anterior   = anteriorNo;
+        if (anteriorNo.proximo != null) {
+            anteriorNo.proximo.anterior = novo;
+        }
+        anteriorNo.proximo = novo;
+        tamanho++;
+    }
+ 
+    private Restaurante removerNo(No no) {
+        no.anterior.proximo = no.proximo;
+        if (no.proximo != null) {
+            no.proximo.anterior = no.anterior;
+        }
+        tamanho--;
+        return no.restaurante;
+    }
+ 
+    public void inserirInicio(Restaurante restaurante) {
+        inserirApos(cabeca, restaurante);
+    }
+ 
+    public void inserir(Restaurante restaurante, int posicao) {
+        if (posicao == 0) {
+            inserirApos(cabeca, restaurante);
+        } else {
+            inserirApos(getNo(posicao - 1), restaurante);
+        }
+    }
+ 
+    public void inserirFim(Restaurante restaurante) {
+        inserirApos(getUltimo(), restaurante);
+    }
+ 
+    public Restaurante removerInicio() {
+        return removerNo(cabeca.proximo);
+    }
+ 
+    public Restaurante remover(int posicao) {
+        return removerNo(getNo(posicao));
+    }
+ 
+    public Restaurante removerFim() {
+        No ultimo = cabeca;
+        while (ultimo.proximo != null) {
+            ultimo = ultimo.proximo;
+        }
+        return removerNo(ultimo);
+    }
+ 
+    public Restaurante getRestaurante(int i) {
+        return getNo(i).restaurante;
+    }
+}
+
 public class Main {
  
     public static void main(String[] args) throws IOException {
@@ -690,32 +827,55 @@ public class Main {
         ColecaoRestaurantes colecao = ColecaoRestaurantes.lerCsv();
         Restaurante[] todos = colecao.getRestaurantes();
  
-        ColecaoRestaurantes selecionados = new ColecaoRestaurantes(colecao.getTamanho());
-        int qtd = 0;
+        ListaEncadeada lista = new ListaEncadeada();
  
         int id = sc.nextInt();
         if (sc.hasNextLine()) sc.nextLine();
         while (id != -1) {
             for (int i = 0; i < colecao.getTamanho(); i++) {
                 if (todos[i].getId() == id) {
-                    selecionados.getRestaurantes()[qtd] = todos[i];
-                    qtd++;
+                    lista.inserirFim(todos[i]);
                 }
             }
             id = sc.nextInt();
             if (sc.hasNextLine()) sc.nextLine();
         }
  
-        ColecaoRestaurantes resultado = new ColecaoRestaurantes(qtd);
-        for (int i = 0; i < qtd; i++) {
-            resultado.getRestaurantes()[i] = selecionados.getRestaurantes()[i];
+        int n = sc.nextInt();
+        if (sc.hasNextLine()) sc.nextLine();
+ 
+        for (int i = 0; i < n; i++) {
+            String linha    = sc.nextLine();
+            String[] partes = Restaurante.divideCampo(linha, ' ');
+            String comando  = partes[0];
+ 
+            if (comando.compareTo("II") == 0) {
+                int idInserir = Restaurante.converteInteiro(partes[1]);
+                lista.inserirInicio(colecao.buscarPorId(idInserir));
+ 
+            } else if (comando.compareTo("I*") == 0) {
+                int posicao   = Restaurante.converteInteiro(partes[1]);
+                int idInserir = Restaurante.converteInteiro(partes[2]);
+                lista.inserir(colecao.buscarPorId(idInserir), posicao);
+ 
+            } else if (comando.compareTo("IF") == 0) {
+                int idInserir = Restaurante.converteInteiro(partes[1]);
+                lista.inserirFim(colecao.buscarPorId(idInserir));
+ 
+            } else if (comando.compareTo("RI") == 0) {
+                System.out.println("(R)" + lista.removerInicio().getNome());
+ 
+            } else if (comando.compareTo("R*") == 0) {
+                int posicao = Restaurante.converteInteiro(partes[1]);
+                System.out.println("(R)" + lista.remover(posicao).getNome());
+ 
+            } else if (comando.compareTo("RF") == 0) {
+                System.out.println("(R)" + lista.removerFim().getNome());
+            }
         }
  
-        resultado.quicksortParcialPorAvaliacao(10);
- 
-        Restaurante[] arr = resultado.getRestaurantes();
-        for (int i = 0; i < qtd; i++) {
-            System.out.println(arr[i].formatar());
+        for (int i = 0; i < lista.getTamanho(); i++) {
+            System.out.println(lista.getRestaurante(i).formatar());
         }
  
         sc.close();
