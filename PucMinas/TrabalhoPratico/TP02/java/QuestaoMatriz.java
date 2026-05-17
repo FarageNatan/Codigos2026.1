@@ -1,209 +1,226 @@
-//package PucMinas.TrabalhoPratico.TP02;
-
 import java.util.Scanner;
-import java.io.IOException;
-
 
 class Celula {
-    int valor;
-    Celula direita;
-    Celula abaixo;
+    public int elemento;
+    public Celula inf, sup, esq, dir;
 
-    public Celula(int valor) {
-        this.valor   = valor;
-        this.direita = null;
-        this.abaixo  = null;
+    public Celula() {
+        this(0);
+    }
+
+    public Celula(int elemento) {
+        this.elemento = elemento;
+        this.inf = this.sup = this.esq = this.dir = null;
     }
 }
 
 class Matriz {
-    private int linhas;
-    private int colunas;
-    private Celula cabeca; 
+    private Celula inicio;
+    private int linha, coluna;
 
-    public Matriz(int linhas, int colunas) {
-        this.linhas  = linhas;
-        this.colunas = colunas;
+    public Matriz(int linha, int coluna) {
+        this.linha = linha;
+        this.coluna = coluna;
 
-        Celula[][] aux = new Celula[linhas][colunas];
-        for (int i = 0; i < linhas; i++) {
-            for (int j = 0; j < colunas; j++) {
-                aux[i][j] = new Celula(0);
+        if (linha <= 0 || coluna <= 0) return;
+
+        inicio = new Celula();
+        Celula atualLinha = inicio;
+        for (int j = 1; j < coluna; j++) {
+            Celula nova = new Celula();
+            atualLinha.dir = nova;
+            nova.esq = atualLinha;
+            atualLinha = nova;
+        }
+
+        Celula linhaAnterior = inicio;
+        for (int i = 1; i < linha; i++) {
+            Celula novaLinhaInicio = new Celula();
+            linhaAnterior.inf = novaLinhaInicio;
+            novaLinhaInicio.sup = linhaAnterior;
+
+            Celula atualSup = linhaAnterior.dir;
+            Celula atualInf = novaLinhaInicio;
+
+            for (int j = 1; j < coluna; j++) {
+                Celula nova = new Celula();
+                atualInf.dir = nova;
+                nova.esq = atualInf;
+
+                atualSup.inf = nova;
+                nova.sup = atualSup;
+
+                atualSup = atualSup.dir;
+                atualInf = nova;
             }
+            linhaAnterior = novaLinhaInicio;
         }
+    }
 
-        for (int i = 0; i < linhas; i++) {
-            for (int j = 0; j < colunas; j++) {
-                if (j < colunas - 1) {
-                    aux[i][j].direita = aux[i][j + 1];
+    public void ler(Scanner scanner) {
+        Celula linhaAtual = inicio;
+        while (linhaAtual != null) {
+            Celula celulaAtual = linhaAtual;
+            while (celulaAtual != null) {
+                if (scanner.hasNextInt()) {
+                    celulaAtual.elemento = scanner.nextInt();
                 }
-                if (i < linhas - 1) {
-                    aux[i][j].abaixo = aux[i + 1][j];
-                }
+                celulaAtual = celulaAtual.dir;
             }
+            linhaAtual = linhaAtual.inf;
         }
-
-        cabeca         = new Celula(-1);
-        cabeca.direita = aux[0][0];
-    }
-
-    public int getLinhas()  { return linhas; }
-    public int getColunas() { return colunas; }
-
-    private Celula getCelula(int i, int j) {
-        Celula atual = cabeca.direita; // célula (0,0)
-
-        for (int li = 0; li < i; li++) {
-            atual = atual.abaixo;
-        }
-        for (int co = 0; co < j; co++) {
-            atual = atual.direita;
-        }
-
-        return atual;
-    }
-
-    public int get(int i, int j) {
-        return getCelula(i, j).valor;
-    }
-
-    public void set(int i, int j, int valor) {
-        getCelula(i, j).valor = valor;
     }
 
     public Matriz somar(Matriz m) {
-        Matriz resultado = new Matriz(linhas, colunas);
-        for (int i = 0; i < linhas; i++) {
-            for (int j = 0; j < colunas; j++) {
-                resultado.set(i, j, this.get(i, j) + m.get(i, j));
-            }
+        if (this.linha != m.linha || this.coluna != m.coluna) {
+            return null;
         }
+
+        Matriz resultado = new Matriz(this.linha, this.coluna);
+        
+        Celula rLinha = resultado.inicio;
+        Celula tLinha = this.inicio;
+        Celula mLinha = m.inicio;
+
+        while (rLinha != null) {
+            Celula rCel = rLinha;
+            Celula tCel = tLinha;
+            Celula mCel = mLinha;
+
+            while (rCel != null) {
+                rCel.elemento = tCel.elemento + mCel.elemento;
+                rCel = rCel.dir;
+                tCel = tCel.dir;
+                mCel = mCel.dir;
+            }
+            rLinha = rLinha.inf;
+            tLinha = tLinha.inf;
+            mLinha = mLinha.inf;
+        }
+
         return resultado;
     }
 
     public Matriz multiplicar(Matriz m) {
-        Matriz resultado = new Matriz(this.linhas, m.colunas);
-        for (int i = 0; i < this.linhas; i++) {
-            for (int j = 0; j < m.colunas; j++) {
-                int soma = 0;
-                for (int k = 0; k < this.colunas; k++) {
-                    soma += this.get(i, k) * m.get(k, j);
-                }
-                resultado.set(i, j, soma);
-            }
+        if (this.coluna != m.linha) {
+            return null;
         }
+
+        Matriz resultado = new Matriz(this.linha, m.coluna);
+
+        Celula rLinha = resultado.inicio;
+        Celula tLinhaA = this.inicio;
+
+        while (rLinha != null) {
+            Celula rCel = rLinha;
+            Celula mColunaB = m.inicio;
+
+            while (rCel != null) {
+                int somaProd = 0;
+                Celula tCel = tLinhaA;   
+                Celula mCel = mColunaB;  
+
+                while (tCel != null && mCel != null) {
+                    somaProd += tCel.elemento * mCel.elemento;
+                    tCel = tCel.dir;
+                    mCel = mCel.inf;
+                }
+
+                rCel.elemento = somaProd;
+                rCel = rCel.dir;
+                mColunaB = mColunaB.dir;
+            }
+            rLinha = rLinha.inf;
+            tLinhaA = tLinhaA.inf;
+        }
+
         return resultado;
     }
 
     public void mostrarDiagonalPrincipal() {
-        for (int i = 0; i < linhas; i++) {
-            if (i > 0) {
-                System.out.print(" ");
+        if (linha != coluna) return; 
+
+        Celula atual = inicio;
+        while (atual != null) {
+            System.out.print(atual.elemento + " ");
+            if (atual.dir != null) {
+                atual = atual.dir.inf;
+            } else {
+                atual = null;
             }
-            System.out.print(get(i, i));
         }
         System.out.println();
     }
 
     public void mostrarDiagonalSecundaria() {
-        for (int i = 0; i < linhas; i++) {
-            if (i > 0) {
-                System.out.print(" ");
+        if (linha != coluna) return;
+
+        Celula atual = inicio;
+        while (atual.dir != null) {
+            atual = atual.dir;
+        }
+
+        while (atual != null) {
+            System.out.print(atual.elemento + " ");
+            if (atual.esq != null) {
+                atual = atual.esq.inf;
+            } else {
+                atual = null;
             }
-            System.out.print(get(i, colunas - 1 - i));
         }
         System.out.println();
     }
 
     public void mostrar() {
-        for (int i = 0; i < linhas; i++) {
-            for (int j = 0; j < colunas; j++) {
-                if (j > 0) {
-                    System.out.print(" ");
-                }
-                System.out.print(get(i, j));
+        Celula linhaAtual = inicio;
+        while (linhaAtual != null) {
+            Celula celulaAtual = linhaAtual;
+            while (celulaAtual != null) {
+                System.out.print(celulaAtual.elemento + " ");
+                celulaAtual = celulaAtual.dir;
             }
             System.out.println();
+            linhaAtual = linhaAtual.inf;
         }
     }
 }
 
 public class QuestaoMatriz {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        if (!scanner.hasNextInt()) return;
 
-    public static String[] dividirPorEspaco(String s) {
-        int count = 0;
-        boolean emToken = false;
-        for (int i = 0; i < s.length(); i++) {
-            if (s.charAt(i) != ' ' && !emToken) {
-                count++;
-                emToken = true;
-            } else if (s.charAt(i) == ' ') {
-                emToken = false;
+        int numCasos = scanner.nextInt();
+
+        for (int caso = 0; caso < numCasos; caso++) {
+          
+            int l1 = scanner.nextInt();
+            int c1 = scanner.nextInt();
+            Matriz m1 = new Matriz(l1, c1);
+            m1.ler(scanner);
+
+         
+            int l2 = scanner.nextInt();
+            int c2 = scanner.nextInt();
+            Matriz m2 = new Matriz(l2, c2);
+            m2.ler(scanner);
+
+            m1.mostrarDiagonalPrincipal();
+
+         
+            m2.mostrarDiagonalSecundaria();
+
+            
+            Matriz soma = m1.somar(m2);
+            if (soma != null) {
+                soma.mostrar();
+            }
+
+            Matriz multiplicacao = m1.multiplicar(m2);
+            if (multiplicacao != null) {
+                multiplicacao.mostrar();
             }
         }
-
-        String[] partes = new String[count];
-        int indice = 0;
-        int inicio = -1;
-
-        for (int i = 0; i <= s.length(); i++) {
-            boolean espaco = (i == s.length() || s.charAt(i) == ' ');
-            if (!espaco && inicio == -1) {
-                inicio = i;
-            } else if (espaco && inicio != -1) {
-                char[] trecho = new char[i - inicio];
-                for (int j = inicio; j < i; j++) {
-                    trecho[j - inicio] = s.charAt(j);
-                }
-                partes[indice] = new String(trecho);
-                indice++;
-                inicio = -1;
-            }
-        }
-        return partes;
-    }
-
-    public static int converteInteiro(String s) {
-        int resultado = 0;
-        for (int i = 0; i < s.length(); i++) {
-            resultado = resultado * 10 + (s.charAt(i) - '0');
-        }
-        return resultado;
-    }
-
-    public static Matriz lerMatriz(Scanner sc) {
-        String[] dim = dividirPorEspaco(sc.nextLine().trim());
-        int l = converteInteiro(dim[0]);
-        int c = converteInteiro(dim[1]);
-        Matriz m = new Matriz(l, c);
-        for (int i = 0; i < l; i++) {
-            String[] vals = dividirPorEspaco(sc.nextLine().trim());
-            for (int j = 0; j < c; j++) {
-                m.set(i, j, converteInteiro(vals[j]));
-            }
-        }
-        return m;
-    }
-
-    public static void main(String[] args) throws IOException {
-        Scanner sc = new Scanner(System.in);
-        int casos = converteInteiro(sc.nextLine().trim());
-
-        for (int t = 0; t < casos; t++) {
-            Matriz a = lerMatriz(sc);
-            Matriz b = lerMatriz(sc);
-
-            a.mostrarDiagonalPrincipal();
-
-            b.mostrarDiagonalSecundaria();
-
-            Matriz soma = a.somar(b);
-            soma.mostrar();
-
-            Matriz produto = a.multiplicar(b);
-            produto.mostrar();
-        }
-
-        sc.close();
+        scanner.close();
     }
 }

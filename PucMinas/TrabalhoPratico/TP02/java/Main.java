@@ -818,6 +818,43 @@ class ListaEncadeada {
     public Restaurante getRestaurante(int i) {
         return getNo(i).restaurante;
     }
+
+    private No particionarNo(No inicio, No fim) {
+        Restaurante pivo = fim.restaurante;
+        No i             = inicio.anterior;
+ 
+        No j = inicio;
+        while (j != fim) {
+            if (j.restaurante.getNome().compareTo(pivo.getNome()) <= 0) {
+                i = (i == null) ? inicio : i.proximo;
+                Restaurante temp = i.restaurante;
+                i.restaurante    = j.restaurante;
+                j.restaurante    = temp;
+            }
+            j = j.proximo;
+        }
+ 
+        i = (i == null) ? inicio : i.proximo;
+        Restaurante temp = i.restaurante;
+        i.restaurante    = fim.restaurante;
+        fim.restaurante  = temp;
+ 
+        return i;
+    }
+ 
+    private void quicksortNo(No inicio, No fim) {
+        if (fim != null && inicio != fim && inicio != fim.proximo) {
+            No pivo = particionarNo(inicio, fim);
+            quicksortNo(inicio, pivo.anterior);
+            quicksortNo(pivo.proximo, fim);
+        }
+    }
+ 
+    public void quicksort() {
+        No primeiro = cabeca.proximo;
+        No ultimo   = getUltimo();
+        quicksortNo(primeiro, ultimo);
+    }
 }
 
 public class Main {
@@ -840,39 +877,60 @@ public class Main {
             id = sc.nextInt();
             if (sc.hasNextLine()) sc.nextLine();
         }
- 
-        int n = sc.nextInt();
-        if (sc.hasNextLine()) sc.nextLine();
- 
+
+        if (sc.hasNextLine()) {
+            sc.nextLine(); 
+        }
+
+        int n = 0;
+        if (sc.hasNextInt()) {
+            n = sc.nextInt();
+        }
+        
+        if (sc.hasNextLine()) {
+            sc.nextLine();
+        }
+
         for (int i = 0; i < n; i++) {
-            String linha    = sc.nextLine();
+            if (!sc.hasNextLine()) {
+                break; 
+            }
+            
+            String linha = sc.nextLine().trim();
+            if (linha.isEmpty()) {
+                i--;
+                continue;
+            }
+
             String[] partes = Restaurante.divideCampo(linha, ' ');
             String comando  = partes[0];
- 
+
             if (comando.compareTo("II") == 0) {
                 int idInserir = Restaurante.converteInteiro(partes[1]);
                 lista.inserirInicio(colecao.buscarPorId(idInserir));
- 
+
             } else if (comando.compareTo("I*") == 0) {
                 int posicao   = Restaurante.converteInteiro(partes[1]);
                 int idInserir = Restaurante.converteInteiro(partes[2]);
                 lista.inserir(colecao.buscarPorId(idInserir), posicao);
- 
+
             } else if (comando.compareTo("IF") == 0) {
                 int idInserir = Restaurante.converteInteiro(partes[1]);
                 lista.inserirFim(colecao.buscarPorId(idInserir));
- 
+
             } else if (comando.compareTo("RI") == 0) {
                 System.out.println("(R)" + lista.removerInicio().getNome());
- 
+
             } else if (comando.compareTo("R*") == 0) {
                 int posicao = Restaurante.converteInteiro(partes[1]);
                 System.out.println("(R)" + lista.remover(posicao).getNome());
- 
+
             } else if (comando.compareTo("RF") == 0) {
                 System.out.println("(R)" + lista.removerFim().getNome());
             }
         }
+ 
+        lista.quicksort();
  
         for (int i = 0; i < lista.getTamanho(); i++) {
             System.out.println(lista.getRestaurante(i).formatar());

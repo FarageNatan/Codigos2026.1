@@ -452,6 +452,63 @@ Restaurante desenfileirar(Fila *f) {
     return r;
 }
 
+typedef struct NoFlex {
+    Restaurante dado;
+    struct NoFlex *proximo;
+} NoFlex;
+
+typedef struct {
+    NoFlex *inicio;
+    int tamanho;
+} ListaEncadeada;
+
+void inicializarListaEnc(ListaEncadeada *l) {
+    l->inicio = NULL;
+    l->tamanho = 0;
+}
+
+void inserirFimEnc(ListaEncadeada *l, Restaurante r) {
+    NoFlex *novo = (NoFlex *)malloc(sizeof(NoFlex));
+    novo->dado = r;
+    novo->proximo = NULL;
+
+    if (l->inicio == NULL) {
+        l->inicio = novo;
+    } else {
+        NoFlex *atual = l->inicio;
+        while (atual->proximo != NULL)
+            atual = atual->proximo;
+        atual->proximo = novo;
+    }
+    l->tamanho++;
+}
+
+// Selection sort: troca apenas os dados, sem remanejar ponteiros
+void selectionSortEnc(ListaEncadeada *l) {
+    NoFlex *i = l->inicio;
+
+    while (i != NULL) {
+        NoFlex *minNo = i;
+        NoFlex *j = i->proximo;
+
+        // Encontra o menor nome a partir de i
+        while (j != NULL) {
+            if (strcmp(j->dado.nome, minNo->dado.nome) < 0)
+                minNo = j;
+            j = j->proximo;
+        }
+
+        // Troca os dados entre i e minNo
+        if (minNo != i) {
+            Restaurante temp = i->dado;
+            i->dado = minNo->dado;
+            minNo->dado = temp;
+        }
+
+        i = i->proximo;
+    }
+}
+
 int main() {
     FILE *arquivo = fopen("/tmp/restaurantes.csv", "r");
     //FILE *arquivo = fopen("../dataset/restaurantes.csv", "r");
@@ -474,9 +531,9 @@ int main() {
 
     fclose(arquivo);
 
-    // Parte 1: lê IDs e enfileira
-    Fila fila;
-    inicializarFila(&fila);
+    // Parte 1: lê IDs e insere na lista encadeada
+    ListaEncadeada lista;
+    inicializarListaEnc(&lista);
 
     int buscaId;
     scanf("%d", &buscaId);
@@ -484,48 +541,31 @@ int main() {
     while (buscaId != -1) {
         for (int i = 0; i < total; i++) {
             if (todos[i].id == buscaId) {
-                enfileirar(&fila, todos[i]);
+                inserirFimEnc(&lista, todos[i]);
                 break;
             }
         }
         scanf("%d", &buscaId);
     }
 
-    // Parte 2: lê quantidade de operações e processa
-    int n;
-    scanf("%d", &n);
-
-    char comando[5];
-    for (int i = 0; i < n; i++) {
-        scanf("%s", comando);
-
-        if (strcmp(comando, "I") == 0) {
-            int id;
-            scanf("%d", &id);
-            for (int j = 0; j < total; j++) {
-                if (todos[j].id == id) {
-                    enfileirar(&fila, todos[j]);
-                    break;
-                }
-            }
-        } else if (strcmp(comando, "R") == 0) {
-            if (!filaVazia(&fila)) {
-                Restaurante r = desenfileirar(&fila);
-                printf("(R)%s\n", r.nome);
-            }
-        }
-    }
+    // Ordena por nome usando selection sort
+    selectionSortEnc(&lista);
 
     // Imprime do primeiro ao último
-    No *atual = fila.inicio;
+    No *atual = lista.inicio;
     while (atual != NULL) {
         formatarRestaurante(&atual->dado);
         atual = atual->proximo;
     }
 
     // Libera memória
-    while (!filaVazia(&fila))
-        desenfileirar(&fila);
+    No *temp;
+    atual = lista.inicio;
+    while (atual != NULL) {
+        temp = atual;
+        atual = atual->proximo;
+        free(temp);
+    }
 
     return 0;
 }
