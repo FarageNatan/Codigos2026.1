@@ -509,6 +509,68 @@ void selectionSortEnc(ListaEncadeada *l) {
     }
 }
 
+typedef struct NoArvore {
+    Restaurante dado;
+    struct NoArvore *esq;
+    struct NoArvore *dir;
+} NoArvore;
+
+NoArvore *criarNo(Restaurante r) {
+    NoArvore *novo = (NoArvore *)malloc(sizeof(NoArvore));
+    novo->dado = r;
+    novo->esq  = NULL;
+    novo->dir  = NULL;
+    return novo;
+}
+
+NoArvore *inserirArvore(NoArvore *raiz, Restaurante r) {
+    if (raiz == NULL) return criarNo(r);
+    int cmp = strcmp(r.nome, raiz->dado.nome);
+    if (cmp < 0)      raiz->esq = inserirArvore(raiz->esq, r);
+    else if (cmp > 0) raiz->dir = inserirArvore(raiz->dir, r);
+    return raiz;
+}
+
+void pesquisarArvore(NoArvore *raiz, char *nome) {
+    int primeiro = 1;
+    NoArvore *atual = raiz;
+
+    while (atual != NULL) {
+        if (!primeiro) printf(" ");
+        if (atual == raiz) printf("raiz");
+
+        int cmp = strcmp(nome, atual->dado.nome);
+
+        if (cmp == 0) {
+            printf(" SIM\n");
+            return;
+        } else if (cmp < 0) {
+            atual = atual->esq;
+            if (atual != NULL) printf(" esq");
+        } else {
+            atual = atual->dir;
+            if (atual != NULL) printf(" dir");
+        }
+        primeiro = 0;
+    }
+    printf(" NAO\n");
+}
+
+void emOrdem(NoArvore *raiz) {
+    if (raiz == NULL) return;
+    emOrdem(raiz->esq);
+    formatarRestaurante(&raiz->dado);
+    emOrdem(raiz->dir);
+}
+
+void liberarArvore(NoArvore *raiz) {
+    if (raiz == NULL) return;
+    liberarArvore(raiz->esq);
+    liberarArvore(raiz->dir);
+    free(raiz);
+}
+
+
 int main() {
     FILE *arquivo = fopen("/tmp/restaurantes.csv", "r");
     //FILE *arquivo = fopen("../dataset/restaurantes.csv", "r");
@@ -518,54 +580,38 @@ int main() {
     }
 
     Restaurante todos[MAX_REGISTROS];
-    //Restaurante lista[MAX_REGISTROS];
     int total = 0;
     char linha[TAM_LINHA];
 
     fgets(linha, TAM_LINHA, arquivo);
 
-    while (fgets(linha, TAM_LINHA, arquivo) && total < MAX_REGISTROS) {
-        if (lerRestaurante(linha, &todos[total]))
-            total++;
-    }
-
+    while (fgets(linha, TAM_LINHA, arquivo) && total < MAX_REGISTROS)
+        if (lerRestaurante(linha, &todos[total])) total++;
     fclose(arquivo);
 
-    // Parte 1: lê IDs e insere na lista encadeada
-    ListaEncadeada lista;
-    inicializarListaEnc(&lista);
-
+    NoArvore *raiz = NULL;
     int buscaId;
     scanf("%d", &buscaId);
 
     while (buscaId != -1) {
         for (int i = 0; i < total; i++) {
             if (todos[i].id == buscaId) {
-                inserirFimEnc(&lista, todos[i]);
+                raiz = inserirArvore(raiz, todos[i]);
                 break;
             }
         }
         scanf("%d", &buscaId);
     }
 
-    // Ordena por nome usando selection sort
-    selectionSortEnc(&lista);
+    char nomeBusca[100];
+    scanf(" %[^\n]", nomeBusca);
 
-    // Imprime do primeiro ao último
-    No *atual = lista.inicio;
-    while (atual != NULL) {
-        formatarRestaurante(&atual->dado);
-        atual = atual->proximo;
+    while (strcmp(nomeBusca, "FIM") != 0) {
+        pesquisarArvore(raiz, nomeBusca);
+        scanf(" %[^\n]", nomeBusca);
     }
 
-    // Libera memória
-    No *temp;
-    atual = lista.inicio;
-    while (atual != NULL) {
-        temp = atual;
-        atual = atual->proximo;
-        free(temp);
-    }
-
+    emOrdem(raiz);
+    liberarArvore(raiz);
     return 0;
 }
