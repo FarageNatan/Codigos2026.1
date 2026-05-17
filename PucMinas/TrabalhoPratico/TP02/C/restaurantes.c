@@ -285,7 +285,23 @@ Restaurante desempilhar(Pilha *p) {
     return p->dados[p->topo--];
 }
 
-// --- Main ---
+void insertionSortParcial(Restaurante lista[], int total, int k) {
+    for (int i = 1; i < total; i++) {
+        Restaurante chave = lista[i];
+        int j = i - 1;
+
+        if (i < k || strcmp(chave.cidade, lista[k-1].cidade) < 0) {
+            int limite = i < k ? i : k - 1;
+            j = limite - 1;
+
+            while (j >= 0 && strcmp(lista[j].cidade, chave.cidade) > 0) {
+                lista[j + 1] = lista[j];
+                j--;
+            }
+            lista[j + 1] = chave;
+        }
+    }
+}
 
 int main() {
     FILE *arquivo = fopen("/tmp/restaurantes.csv", "r");
@@ -299,7 +315,7 @@ int main() {
     int total = 0;
     char linha[TAM_LINHA];
 
-    fgets(linha, TAM_LINHA, arquivo); // pula cabeçalho
+    fgets(linha, TAM_LINHA, arquivo);
 
     while (fgets(linha, TAM_LINHA, arquivo) && total < MAX_REGISTROS) {
         if (lerRestaurante(linha, &lista[total]))
@@ -308,9 +324,8 @@ int main() {
 
     fclose(arquivo);
 
-    // Parte 1: lê IDs e empilha os restaurantes encontrados
-    Pilha pilha;
-    inicializarPilha(&pilha);
+    Restaurante selecionados[MAX_REGISTROS];
+    int totalSelecionados = 0;
 
     int buscaId;
     scanf("%d", &buscaId);
@@ -318,41 +333,17 @@ int main() {
     while (buscaId != -1) {
         for (int i = 0; i < total; i++) {
             if (lista[i].id == buscaId) {
-                empilhar(&pilha, lista[i]);
+                selecionados[totalSelecionados++] = lista[i];
                 break;
             }
         }
         scanf("%d", &buscaId);
     }
 
-    // Parte 2: lê quantidade de operações e processa
-    int n;
-    scanf("%d", &n);
+    insertionSortParcial(selecionados, totalSelecionados, 10);
 
-    char comando[5];
-    for (int i = 0; i < n; i++) {
-        scanf("%s", comando);
-
-        if (strcmp(comando, "I") == 0) {
-            int id;
-            scanf("%d", &id);
-            for (int j = 0; j < total; j++) {
-                if (lista[j].id == id) {
-                    empilhar(&pilha, lista[j]);
-                    break;
-                }
-            }
-        } else if (strcmp(comando, "R") == 0) {
-            if (!pilhaVazia(&pilha)) {
-                Restaurante r = desempilhar(&pilha);
-                printf("(R)%s\n", r.nome);
-            }
-        }
-    }
-
-    // Imprime do topo à base
-    while (!pilhaVazia(&pilha)) {
-        formatarRestaurante(&pilha.dados[pilha.topo--]);
+    for (int i = 0; i < totalSelecionados; i++) {
+        formatarRestaurante(&selecionados[i]);
     }
 
     return 0;

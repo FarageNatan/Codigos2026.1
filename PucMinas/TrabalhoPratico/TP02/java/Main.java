@@ -501,6 +501,60 @@ class ColecaoRestaurantes {
  
         return encontrado;
     }
+
+    public void selectionSortParcialPorNome(int k) {
+        for (int i = 0; i < k; i++) {
+            int indiceMenor = i;
+ 
+            for (int j = i + 1; j < tamanho; j++) {
+                if (restaurantes[j].getNome().compareTo(restaurantes[indiceMenor].getNome()) < 0) {
+                    indiceMenor = j;
+                }
+            }
+ 
+            Restaurante temp = restaurantes[i];
+            restaurantes[i] = restaurantes[indiceMenor];
+            restaurantes[indiceMenor] = temp;
+        }
+    }
+
+    private int particionar(int inicio, int fim) {
+        Restaurante pivo = restaurantes[fim];
+        int i = inicio - 1;
+ 
+        for (int j = inicio; j < fim; j++) {
+            if (restaurantes[j].getAvaliacao() < pivo.getAvaliacao()) {
+                i++;
+                Restaurante temp  = restaurantes[i];
+                restaurantes[i]   = restaurantes[j];
+                restaurantes[j]   = temp;
+            }
+        }
+ 
+        Restaurante temp      = restaurantes[i + 1];
+        restaurantes[i + 1]   = restaurantes[fim];
+        restaurantes[fim]     = temp;
+ 
+        return i + 1;
+    }
+ 
+    private void quicksortParcial(int inicio, int fim, int k) {
+        if (inicio < fim) {
+            int indicePivo = particionar(inicio, fim);
+ 
+            if (indicePivo > 0) {
+                quicksortParcial(inicio, indicePivo - 1, k);
+            }
+ 
+            if (indicePivo < k - 1) {
+                quicksortParcial(indicePivo + 1, fim, k);
+            }
+        }
+    }
+ 
+    public void quicksortParcialPorAvaliacao(int k) {
+        quicksortParcial(0, tamanho - 1, k);
+    }
 }
 
 class Lista {
@@ -636,46 +690,32 @@ public class Main {
         ColecaoRestaurantes colecao = ColecaoRestaurantes.lerCsv();
         Restaurante[] todos = colecao.getRestaurantes();
  
-        // ── Parte 1: lê IDs e insere ao final da Fila ──────────────────
-        FilaCircular fila = new FilaCircular();
+        ColecaoRestaurantes selecionados = new ColecaoRestaurantes(colecao.getTamanho());
+        int qtd = 0;
  
         int id = sc.nextInt();
-        sc.nextLine();
+        if (sc.hasNextLine()) sc.nextLine();
         while (id != -1) {
             for (int i = 0; i < colecao.getTamanho(); i++) {
                 if (todos[i].getId() == id) {
-                    fila.inserir(todos[i]);
-                    System.out.println("(I)" + fila.mediaAnoAbertura());
+                    selecionados.getRestaurantes()[qtd] = todos[i];
+                    qtd++;
                 }
             }
             id = sc.nextInt();
-            sc.nextLine();
+            if (sc.hasNextLine()) sc.nextLine();
         }
  
-        // ── Parte 2: lê e processa comandos I e R ──────────────────────
-        int n = sc.nextInt();
-        sc.nextLine();
- 
-        for (int i = 0; i < n; i++) {
-            String linha    = sc.nextLine();
-            String[] partes = Restaurante.divideCampo(linha, ' ');
-            String comando  = partes[0];
- 
-            if (comando.compareTo("I") == 0) {
-                int idInserir = Restaurante.converteInteiro(partes[1]);
-                Restaurante r = colecao.buscarPorId(idInserir);
-                fila.inserir(r);
-                System.out.println("(I)" + fila.mediaAnoAbertura());
- 
-            } else if (comando.compareTo("R") == 0) {
-                Restaurante removido = fila.remover();
-                System.out.println("(R)" + removido.getNome());
-            }
+        ColecaoRestaurantes resultado = new ColecaoRestaurantes(qtd);
+        for (int i = 0; i < qtd; i++) {
+            resultado.getRestaurantes()[i] = selecionados.getRestaurantes()[i];
         }
  
-        // ── Saída final: fila do primeiro ao último ─────────────────────
-        for (int i = 0; i < fila.getTamanho(); i++) {
-            System.out.println(fila.getRestaurante(i).formatar());
+        resultado.quicksortParcialPorAvaliacao(10);
+ 
+        Restaurante[] arr = resultado.getRestaurantes();
+        for (int i = 0; i < qtd; i++) {
+            System.out.println(arr[i].formatar());
         }
  
         sc.close();
