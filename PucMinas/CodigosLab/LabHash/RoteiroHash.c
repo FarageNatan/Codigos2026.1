@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 typedef struct TabelaHashReserva
 {
@@ -36,8 +37,20 @@ int hash(TabelaHashReserva* hash, char* chave){
         soma += chave[i];
     }
     int valor = soma % hash->m;
-    return ;
+    return valor;
 }
+
+bool isPosicaoLivre(TabelaHashReserva* hash, int pos){
+    bool resp;
+    if(hash->tabela[pos] == NULL){
+        resp = true;
+    }else{
+        resp = false;
+    }
+    return resp;
+}
+
+
 
 
 
