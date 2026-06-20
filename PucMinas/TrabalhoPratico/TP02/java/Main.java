@@ -1,5 +1,3 @@
-//package PucMinas.TrabalhoPratico.TP02;
-
 import java.io.IOException;
 import java.util.Scanner;
 import java.io.File;
@@ -29,30 +27,23 @@ class Data {
     public void setMes(int mes) { this.mes = mes; }
     public void setDia(int dia) { this.dia = dia; }
 
-    // Retorna a data no formato DD/MM/YYYY — usando apenas format
     public String formatar() {
         return String.format("%02d/%02d/%04d", dia, mes, ano);
     }
 
-    
     public int comparar(Data outra) {
         int resultado = ano - outra.ano;
-
         if (resultado == 0) {
             resultado = mes - outra.mes;
         }
-
         if (resultado == 0) {
             resultado = dia - outra.dia;
         }
-
         return resultado;
     }
 
-    // Converte "YYYY-MM-DD" para Data — usando apenas charAt e length
     public static Data parseData(String s) {
         Data dataResultado = null;
-
         if (s != null && s.length() == 10) {
             int ano = 0;
             int mes = 0;
@@ -71,7 +62,6 @@ class Data {
 
             dataResultado = new Data(ano, mes, dia);
         }
-
         return dataResultado;
     }
 }
@@ -100,31 +90,26 @@ class Hora {
     public void setHora(int hora)     { this.hora = hora; }
     public void setMinuto(int minuto) { this.minuto = minuto; }
 
-    // Retorna a hora no formato HH:mm — usando apenas format
     public String formatar() {
         return String.format("%02d:%02d", hora, minuto);
     }
 
-    // Converte "HH:mm" para Hora — usando apenas charAt e length
     public static Hora parseHora(String s) {
         Hora resultado = null;
-
         if (s != null && s.length() == 5) {
             int hora   = (s.charAt(0) - '0') * 10 + (s.charAt(1) - '0');
             int minuto = (s.charAt(3) - '0') * 10 + (s.charAt(4) - '0');
             resultado  = new Hora(hora, minuto);
         }
-
         return resultado;
     }
 }
-
 
 class Restaurante {
     private int id;
     private String nome;
     private String cidade;
-    private int capacidade;
+    private int capacity;
     private double avaliacao;
     private String[] tiposCozinha;
     private int faixaPreco;
@@ -133,28 +118,27 @@ class Restaurante {
     private Data dataAbertura;
     private Boolean aberto;
 
-    public Restaurante(int id, String nome, String cidade, int capacidade, double avaliacao,
+    public Restaurante(int id, String nome, String cidade, int capacity, double avaliacao,
                        String[] tiposCozinha, int faixaPreco,
                        Hora horarioAbertura, Hora horarioFechamento,
                        Data dataAbertura, Boolean aberto) {
-        this.id                = id;
-        this.nome              = nome;
-        this.cidade            = cidade;
-        this.capacidade        = capacidade;
-        this.avaliacao         = avaliacao;
-        this.tiposCozinha      = tiposCozinha;
-        this.faixaPreco        = faixaPreco;
+        this.id              = id;
+        this.nome            = nome;
+        this.cidade          = cidade;
+        this.capacity        = capacity;
+        this.avaliacao       = avaliacao;
+        this.tiposCozinha    = tiposCozinha;
+        this.faixaPreco      = faixaPreco;
         this.horarioAbertura   = horarioAbertura;
         this.horarioFechamento = horarioFechamento;
         this.dataAbertura      = dataAbertura;
         this.aberto            = aberto;
     }
 
-
     public int      getId()                { return id; }
     public String   getNome()              { return nome; }
     public String   getCidade()            { return cidade; }
-    public int      getCapacidade()        { return capacidade; }
+    public int      getCapacidade()        { return capacity; }
     public double   getAvaliacao()         { return avaliacao; }
     public String[] getTiposCozinha()      { return tiposCozinha; }
     public int      getFaixaPreco()        { return faixaPreco; }
@@ -163,7 +147,6 @@ class Restaurante {
     public Data     getDataAbertura()      { return dataAbertura; }
     public Boolean  getAberto()            { return aberto; }
 
-    // Formato: [id ## nome ## cidade ## capacidade ## avaliacao ## [tipos] ## faixaPreco ## HH:mm-HH:mm ## DD/MM/YYYY ## aberto]
     public String formatar() {
         String tipos = "[";
         for (int i = 0; i < tiposCozinha.length; i++) {
@@ -179,33 +162,20 @@ class Restaurante {
         }
 
         return String.format("[%d ## %s ## %s ## %d ## %.1f ## %s ## %s ## %s-%s ## %s ## %b]",
-            id,
-            nome,
-            cidade,
-            capacidade,
-            avaliacao,
-            tipos,
-            preco,
-            horarioAbertura.formatar(),
-            horarioFechamento.formatar(),
-            dataAbertura.formatar(),
-            aberto);
+            id, nome, cidade, capacity, avaliacao, tipos, preco,
+            horarioAbertura.formatar(), horarioFechamento.formatar(), dataAbertura.formatar(), aberto);
     }
 
-    // Conta '$' na string para determinar faixa de preco (1 a 4)
     public static int converteFaixaPreco(String s) {
         int novaFaixa = 0;
-
         for (int i = 0; i < s.length(); i++) {
             if (s.charAt(i) == '$') {
                 novaFaixa++;
             }
         }
-
         return novaFaixa;
     }
 
-    // Divide uma string pelo separador
     public static String[] divideCampo(String s, char separador) {
         int count = 1;
         for (int i = 0; i < s.length(); i++) {
@@ -232,30 +202,23 @@ class Restaurante {
                 inicio = i + 1;
             }
         }
-
         return partes;
     }
 
-    // Converte "true"/"false" para booleano
     public static boolean converteBooleano(String s) {
         return s.compareTo("true") == 0;
     }
 
-    // Converte string numerica inteira para int
     public static int converteInteiro(String s) {
         int resultado = 0;
-
         for (int i = 0; i < s.length(); i++) {
             resultado = resultado * 10 + (s.charAt(i) - '0');
         }
-
         return resultado;
     }
 
-    // Converte string decimal para double
     public static double converteDouble(String s) {
         int pontoPos = -1;
-
         for (int i = 0; i < s.length(); i++) {
             if (s.charAt(i) == '.') {
                 pontoPos = i;
@@ -263,7 +226,6 @@ class Restaurante {
         }
 
         double resultado = 0;
-
         if (pontoPos == -1) {
             resultado = converteInteiro(s);
         } else {
@@ -276,18 +238,16 @@ class Restaurante {
                 fator /= 10;
             }
         }
-
         return resultado;
     }
 
-    // Lê uma linha CSV e retorna um Restaurante
     public static Restaurante lerRestaurante(String linha) {
         String[] campos = divideCampo(linha, ',');
 
         int      id           = converteInteiro(campos[0]);
         String   nome         = campos[1];
         String   cidade       = campos[2];
-        int      capacidade   = converteInteiro(campos[3]);
+        int      capacity     = converteInteiro(campos[3]);
         double   avaliacao    = converteDouble(campos[4]);
         String[] tiposCozinha = divideCampo(campos[5], ';');
         int      faixaPreco   = converteFaixaPreco(campos[6]);
@@ -297,10 +257,9 @@ class Restaurante {
         Data     dataAbertura = Data.parseData(campos[8]);
         boolean  aberto       = converteBooleano(campos[9]);
 
-        return new Restaurante(id, nome, cidade, capacidade, avaliacao, tiposCozinha, faixaPreco, abertura, fechamento, dataAbertura, aberto);
+        return new Restaurante(id, nome, cidade, capacity, avaliacao, tiposCozinha, faixaPreco, abertura, fechamento, dataAbertura, aberto);
     }
 }
-
 
 class ColecaoRestaurantes {
     private int tamanho;
@@ -311,29 +270,21 @@ class ColecaoRestaurantes {
         this.restaurantes = new Restaurante[tamanho];
     }
 
-    // Retorna a quantidade de restaurantes da coleção
     public int getTamanho() { return tamanho; }
-
-    // Retorna o arranjo com os restaurantes (ponteiros) da coleção
     public Restaurante[] getRestaurantes() { return restaurantes; }
 
-    // Conta as linhas de dados no CSV (descontando o cabeçalho)
     private static int contarLinhas(String caminho) throws IOException {
         Scanner scanner = new Scanner(new File(caminho));
         int total = 0;
-
         scanner.nextLine();
-
         while (scanner.hasNextLine()) {
             scanner.nextLine();
             total++;
         }
-
         scanner.close();
         return total;
     }
 
-    // Lê o arquivo CSV, cria os restaurantes e configura a coleção
     public void lerCsv(String path) throws IOException {
         int total = contarLinhas(path);
         this.tamanho = total;
@@ -348,594 +299,143 @@ class ColecaoRestaurantes {
             restaurantes[i] = Restaurante.lerRestaurante(linha);
             i++;
         }
-
         scanner.close();
     }
 
-    // Lê o dataset do arquivo CSV e retorna a coleção com os restaurantes
     public static ColecaoRestaurantes lerCsv() throws IOException {
         ColecaoRestaurantes colecao = new ColecaoRestaurantes(0);
-        //colecao.lerCsv("./PucMinas/TrabalhoPratico/TP02/dataset/restaurantes.csv");
         colecao.lerCsv("/tmp/restaurantes.csv");
         return colecao;
     }
+}
 
-    public void ordenarPorCidade() {
-        for (int i = 1; i < tamanho; i++) {
-            Restaurante chave = restaurantes[i];
-            int j = i - 1;
+class NoTrie {
+    public char elemento;
+    public boolean isFim;
+    public NoTrie[] tabela;
+    public int tamTabela;
+    public Restaurante restaurante;
 
-            while (j >= 0 && (
-                restaurantes[j].getCidade().compareTo(chave.getCidade()) > 0 ||
-                (restaurantes[j].getCidade().compareTo(chave.getCidade()) == 0 &&
-                 restaurantes[j].getId() > chave.getId())
-            )) {
-                restaurantes[j + 1] = restaurantes[j];
-                j = j - 1;
-            }
-
-            restaurantes[j + 1] = chave;
-        }
+    public NoTrie() {
+        this('\0');
     }
 
-    private void intercalar(int inicio, int meio, int fim) {
-        Restaurante[] aux = new Restaurante[fim - inicio + 1];
+    public NoTrie(char elemento) {
+        this.elemento = elemento;
+        this.isFim = false;
+        this.tamTabela = 41; 
+        this.tabela = new NoTrie[tamTabela];
+        this.restaurante = null;
+    }
 
-        int esq = inicio;
-        int dir = meio + 1;
-        int k   = 0;
+    public int hash(char c) {
+        return c % tamTabela;
+    }
 
-        while (esq <= meio && dir <= fim) {
-            int cmpCidade = restaurantes[esq].getCidade().compareTo(restaurantes[dir].getCidade());
-            int cmpNome   = restaurantes[esq].getNome().compareTo(restaurantes[dir].getNome());
+    public NoTrie inserirFilho(char c) {
+        int pos = hash(c);
+        while (tabela[pos] != null && tabela[pos].elemento != c) {
+            pos = (pos + 1) % tamTabela;
+        }
+        if (tabela[pos] == null) {
+            tabela[pos] = new NoTrie(c);
+        }
+        return tabela[pos];
+    }
 
-            boolean escolheEsq = cmpCidade < 0 || (cmpCidade == 0 && cmpNome <= 0);
+    public NoTrie obterFilho(char c) {
+        int pos = hash(c);
+        int inicio = pos;
+        while (tabela[pos] != null) {
+            if (tabela[pos].elemento == c) {
+                return tabela[pos];
+            }
+            pos = (pos + 1) % tamTabela;
+            if (pos == inicio) break;
+        }
+        return null;
+    }
+}
 
-            if (escolheEsq) {
-                aux[k] = restaurantes[esq];
-                esq++;
+class ArvoreTrieHash {
+    private NoTrie raiz;
+
+    public ArvoreTrieHash() {
+        raiz = new NoTrie();
+    }
+
+    public void inserir(Restaurante r) {
+        String nome = r.getNome();
+        NoTrie atual = raiz;
+        for (int i = 0; i < nome.length(); i++) {
+            atual = atual.inserirFilho(nome.charAt(i));
+        }
+        atual.isFim = true;
+        atual.restaurante = r;
+    }
+
+    public void pesquisar(String nome) {
+        NoTrie atual = raiz;
+        boolean encontrado = true;
+        int limiteImpressao = -1;
+
+        // Faz o caminho prévio para calcular onde a árvore de fato interrompe a busca
+        NoTrie aux = raiz;
+        for (int i = 0; i < nome.length(); i++) {
+            char c = nome.charAt(i);
+            aux = aux.obterFilho(c);
+            if (aux != null) {
+                limiteImpressao = i;
             } else {
-                aux[k] = restaurantes[dir];
-                dir++;
-            }
-            k++;
-        }
-
-        while (esq <= meio) {
-            aux[k] = restaurantes[esq];
-            esq++;
-            k++;
-        }
-
-        while (dir <= fim) {
-            aux[k] = restaurantes[dir];
-            dir++;
-            k++;
-        }
-
-        for (int i = 0; i < aux.length; i++) {
-            restaurantes[inicio + i] = aux[i];
-        }
-    }
-
-    private void mergesort(int inicio, int fim) {
-        if (inicio < fim) {
-            int meio = (inicio + fim) / 2;
-            mergesort(inicio, meio);
-            mergesort(meio + 1, fim);
-            intercalar(inicio, meio, fim);
-        }
-    }
-
-    public void ordenarPorCidadeMergesort() {
-        mergesort(0, tamanho - 1);
-    }
-    
-    private void heapify(int n, int i) {
-        int maior = i;
-        int esq   = 2 * i + 1;
-        int dir   = 2 * i + 2;
-
-        if (esq < n) {
-            int cmpData = restaurantes[esq].getDataAbertura().comparar(restaurantes[maior].getDataAbertura());
-            int cmpNome = restaurantes[esq].getNome().compareTo(restaurantes[maior].getNome());
-
-            if (cmpData > 0 || (cmpData == 0 && cmpNome > 0)) {
-                maior = esq;
-            }
-        }
-
-        if (dir < n) {
-            int cmpData = restaurantes[dir].getDataAbertura().comparar(restaurantes[maior].getDataAbertura());
-            int cmpNome = restaurantes[dir].getNome().compareTo(restaurantes[maior].getNome());
-
-            if (cmpData > 0 || (cmpData == 0 && cmpNome > 0)) {
-                maior = dir;
-            }
-        }
-
-        if (maior != i) {
-            Restaurante temp    = restaurantes[i];
-            restaurantes[i]     = restaurantes[maior];
-            restaurantes[maior] = temp;
-
-            heapify(n, maior);
-        }
-    }
-
-    public void ordenarPorDataAberturaHeapsort() {
-        // Fase 1: constrói o heap máximo
-        for (int i = tamanho / 2 - 1; i >= 0; i--) {
-            heapify(tamanho, i);
-        }
-
-        for (int i = tamanho - 1; i > 0; i--) {
-            Restaurante temp  = restaurantes[0];
-            restaurantes[0]   = restaurantes[i];
-            restaurantes[i]   = temp;
-
-            heapify(i, 0);
-        }
-    }
-
-    public boolean pesquisaSequencialPorNome(String nome) {
-        boolean encontrado = false;
-
-        for (int i = 0; i < tamanho; i++) {
-            if (restaurantes[i].getNome().compareTo(nome) == 0) {
-                encontrado = true;
-            }
-        }
-
-        return encontrado;
-    }
-
-    public Restaurante buscarPorId(int id) {
-        Restaurante encontrado = null;
- 
-        for (int i = 0; i < tamanho; i++) {
-            if (restaurantes[i].getId() == id) {
-                encontrado = restaurantes[i];
-            }
-        }
- 
-        return encontrado;
-    }
-
-    public void selectionSortParcialPorNome(int k) {
-        for (int i = 0; i < k; i++) {
-            int indiceMenor = i;
- 
-            for (int j = i + 1; j < tamanho; j++) {
-                if (restaurantes[j].getNome().compareTo(restaurantes[indiceMenor].getNome()) < 0) {
-                    indiceMenor = j;
+                // Se falhar logo após um caractere válido de espaço, o espaço não deve ser impresso
+                if (i > 0 && nome.charAt(i - 1) == ' ') {
+                    limiteImpressao = i - 2;
                 }
-            }
- 
-            Restaurante temp = restaurantes[i];
-            restaurantes[i] = restaurantes[indiceMenor];
-            restaurantes[indiceMenor] = temp;
-        }
-    }
-
-    private int particionar(int inicio, int fim) {
-        Restaurante pivo = restaurantes[fim];
-        int i = inicio - 1;
- 
-        for (int j = inicio; j < fim; j++) {
-            if (restaurantes[j].getAvaliacao() < pivo.getAvaliacao()) {
-                i++;
-                Restaurante temp  = restaurantes[i];
-                restaurantes[i]   = restaurantes[j];
-                restaurantes[j]   = temp;
+                encontrado = false;
+                break;
             }
         }
- 
-        Restaurante temp      = restaurantes[i + 1];
-        restaurantes[i + 1]   = restaurantes[fim];
-        restaurantes[fim]     = temp;
- 
-        return i + 1;
-    }
- 
-    private void quicksortParcial(int inicio, int fim, int k) {
-        if (inicio < fim) {
-            int indicePivo = particionar(inicio, fim);
- 
-            if (indicePivo > 0) {
-                quicksortParcial(inicio, indicePivo - 1, k);
-            }
- 
-            if (indicePivo < k - 1) {
-                quicksortParcial(indicePivo + 1, fim, k);
-            }
-        }
-    }
- 
-    public void quicksortParcialPorAvaliacao(int k) {
-        quicksortParcial(0, tamanho - 1, k);
-    }
-}
 
-class Lista {
-    private int tamanho;
-    private Restaurante[] lista;
- 
-    public Lista(int capacidade) {
-        this.tamanho = 0;
-        this.lista   = new Restaurante[capacidade];
-    }
- 
-    public int getTamanho() { return tamanho; }
- 
-    // Insere na primeira posição, deslocando os demais para a direita
-    public void inserirInicio(Restaurante restaurante) {
-        for (int i = tamanho; i > 0; i--) {
-            lista[i] = lista[i - 1];
+        // Imprime as letras até o limite estrito da árvore
+        for (int i = 0; i <= limiteImpressao && i < nome.length(); i++) {
+            System.out.print(nome.charAt(i) + " ");
+            atual = atual.obterFilho(nome.charAt(i));
         }
-        lista[0] = restaurante;
-        tamanho++;
-    }
- 
-    // Insere na posição informada, deslocando os demais para a direita
-    public void inserir(Restaurante restaurante, int posicao) {
-        for (int i = tamanho; i > posicao; i--) {
-            lista[i] = lista[i - 1];
-        }
-        lista[posicao] = restaurante;
-        tamanho++;
-    }
- 
-    // Insere na última posição
-    public void inserirFim(Restaurante restaurante) {
-        lista[tamanho] = restaurante;
-        tamanho++;
-    }
- 
-    // Remove e retorna o primeiro registro, deslocando os demais para a esquerda
-    public Restaurante removerInicio() {
-        Restaurante removido = lista[0];
-        for (int i = 0; i < tamanho - 1; i++) {
-            lista[i] = lista[i + 1];
-        }
-        tamanho--;
-        return removido;
-    }
- 
-    // Remove e retorna o registro na posição informada, deslocando os demais
-    public Restaurante remover(int posicao) {
-        Restaurante removido = lista[posicao];
-        for (int i = posicao; i < tamanho - 1; i++) {
-            lista[i] = lista[i + 1];
-        }
-        tamanho--;
-        return removido;
-    }
- 
-    // Remove e retorna o último registro
-    public Restaurante removerFim() {
-        tamanho--;
-        return lista[tamanho];
-    }
- 
-    // Retorna o restaurante na posição i
-    public Restaurante getRestaurante(int i) { return lista[i]; }
- 
-    // Busca um restaurante pelo id e retorna sua referência (null se não encontrado)
-    public Restaurante buscarPorId(int id) {
-        Restaurante encontrado = null;
- 
-        for (int i = 0; i < tamanho; i++) {
-            if (lista[i].getId() == id) {
-                encontrado = lista[i];
-            }
-        }
- 
-        return encontrado;
-    }
-}
 
-class FilaCircular {
-    private int CAPACIDADE = 5;
-    private Restaurante[] fila;
-    private int inicio;   
-    private int fim;      
-    private int tamanho;  
- 
-    public FilaCircular() {
-        this.fila    = new Restaurante[CAPACIDADE];
-        this.inicio  = 0;
-        this.fim     = 0;
-        this.tamanho = 0;
-    }
- 
-    public int getTamanho()    { return tamanho; }
-    public boolean estaCheia() { return tamanho == CAPACIDADE; }
-    public boolean estaVazia() { return tamanho == 0; }
- 
-    public Restaurante getRestaurante(int i) {
-        return fila[(inicio + i) % CAPACIDADE];
-    }
- 
-    public Restaurante remover() {
-        Restaurante removido = fila[inicio];
-        inicio  = (inicio + 1) % CAPACIDADE;
-        tamanho--;
-        return removido;
-    }
-
-    public void inserir(Restaurante restaurante) {
-        if (estaCheia()) {
-            Restaurante removido = remover();
-            System.out.println("(R)" + removido.getNome());
-        }
-        fila[fim]  = restaurante;
-        fim        = (fim + 1) % CAPACIDADE;
-        tamanho++;
-    }
- 
-    public int mediaAnoAbertura() {
-        int soma = 0;
-        for (int i = 0; i < tamanho; i++) {
-            soma += getRestaurante(i).getDataAbertura().getAno();
-        }
-        return Math.round((float) soma / tamanho);
-    }
-}
-
-class Pilha {
-    private int tamanho;
-    private int capacidade;
-    private Restaurante[] pilha;
- 
-    public Pilha(int capacidadeInicial) {
-        this.tamanho    = 0;
-        this.capacidade = capacidadeInicial;
-        this.pilha      = new Restaurante[capacidadeInicial];
-    }
- 
-    public int getTamanho()    { return tamanho; }
-    public boolean estaVazia() { return tamanho == 0; }
- 
-    private void expandir() {
-        capacidade = capacidade * 2;
-        Restaurante[] nova = new Restaurante[capacidade];
-        for (int i = 0; i < tamanho; i++) {
-            nova[i] = pilha[i];
-        }
-        pilha = nova;
-    }
- 
-    public void inserir(Restaurante restaurante) {
-        if (tamanho == capacidade) {
-            expandir();
-        }
-        pilha[tamanho] = restaurante;
-        tamanho++;
-    }
- 
-    public Restaurante remover() {
-        tamanho--;
-        return pilha[tamanho];
-    }
- 
-    public Restaurante getRestaurante(int i) { return pilha[i]; }
-}
-
-class No {
-    Restaurante restaurante;
-    No anterior;
-    No proximo;
- 
-    public No(Restaurante restaurante) {
-        this.restaurante = restaurante;
-        this.anterior    = null;
-        this.proximo     = null;
-    }
-}
-
-class ListaEncadeada {
-    private No cabeca;
-    private int tamanho;
- 
-    public ListaEncadeada() {
-        cabeca         = new No(null);
-        cabeca.proximo = null;
-        cabeca.anterior = null;
-        tamanho        = 0;
-    }
- 
-    public int getTamanho() { return tamanho; }
- 
-    private No getNo(int posicao) {
-        No atual = cabeca.proximo;
-        for (int i = 0; i < posicao; i++) {
-            atual = atual.proximo;
-        }
-        return atual;
-    }
- 
-    private No getUltimo() {
-        No atual = cabeca;
-        while (atual.proximo != null) {
-            atual = atual.proximo;
-        }
-        return atual;
-    }
- 
-    private void inserirApos(No anteriorNo, Restaurante restaurante) {
-        No novo         = new No(restaurante);
-        novo.proximo    = anteriorNo.proximo;
-        novo.anterior   = anteriorNo;
-        if (anteriorNo.proximo != null) {
-            anteriorNo.proximo.anterior = novo;
-        }
-        anteriorNo.proximo = novo;
-        tamanho++;
-    }
- 
-    private Restaurante removerNo(No no) {
-        no.anterior.proximo = no.proximo;
-        if (no.proximo != null) {
-            no.proximo.anterior = no.anterior;
-        }
-        tamanho--;
-        return no.restaurante;
-    }
- 
-    public void inserirInicio(Restaurante restaurante) {
-        inserirApos(cabeca, restaurante);
-    }
- 
-    public void inserir(Restaurante restaurante, int posicao) {
-        if (posicao == 0) {
-            inserirApos(cabeca, restaurante);
+        if (encontrado && atual != null && atual.isFim) {
+            System.out.println("SIM " + atual.restaurante.formatar());
         } else {
-            inserirApos(getNo(posicao - 1), restaurante);
+            System.out.println("NAO");
         }
-    }
- 
-    public void inserirFim(Restaurante restaurante) {
-        inserirApos(getUltimo(), restaurante);
-    }
- 
-    public Restaurante removerInicio() {
-        return removerNo(cabeca.proximo);
-    }
- 
-    public Restaurante remover(int posicao) {
-        return removerNo(getNo(posicao));
-    }
- 
-    public Restaurante removerFim() {
-        No ultimo = cabeca;
-        while (ultimo.proximo != null) {
-            ultimo = ultimo.proximo;
-        }
-        return removerNo(ultimo);
-    }
- 
-    public Restaurante getRestaurante(int i) {
-        return getNo(i).restaurante;
-    }
-
-    private No particionarNo(No inicio, No fim) {
-        Restaurante pivo = fim.restaurante;
-        No i             = inicio.anterior;
- 
-        No j = inicio;
-        while (j != fim) {
-            if (j.restaurante.getNome().compareTo(pivo.getNome()) <= 0) {
-                i = (i == null) ? inicio : i.proximo;
-                Restaurante temp = i.restaurante;
-                i.restaurante    = j.restaurante;
-                j.restaurante    = temp;
-            }
-            j = j.proximo;
-        }
- 
-        i = (i == null) ? inicio : i.proximo;
-        Restaurante temp = i.restaurante;
-        i.restaurante    = fim.restaurante;
-        fim.restaurante  = temp;
- 
-        return i;
-    }
- 
-    private void quicksortNo(No inicio, No fim) {
-        if (fim != null && inicio != fim && inicio != fim.proximo) {
-            No pivo = particionarNo(inicio, fim);
-            quicksortNo(inicio, pivo.anterior);
-            quicksortNo(pivo.proximo, fim);
-        }
-    }
- 
-    public void quicksort() {
-        No primeiro = cabeca.proximo;
-        No ultimo   = getUltimo();
-        quicksortNo(primeiro, ultimo);
     }
 }
 
 public class Main {
- 
     public static void main(String[] args) throws IOException {
         Scanner sc = new Scanner(System.in);
         ColecaoRestaurantes colecao = ColecaoRestaurantes.lerCsv();
         Restaurante[] todos = colecao.getRestaurantes();
- 
-        ListaEncadeada lista = new ListaEncadeada();
- 
+
+        ArvoreTrieHash arvore = new ArvoreTrieHash();
+
         int id = sc.nextInt();
         if (sc.hasNextLine()) sc.nextLine();
         while (id != -1) {
             for (int i = 0; i < colecao.getTamanho(); i++) {
                 if (todos[i].getId() == id) {
-                    lista.inserirFim(todos[i]);
+                    arvore.inserir(todos[i]);
                 }
             }
             id = sc.nextInt();
             if (sc.hasNextLine()) sc.nextLine();
         }
 
-        if (sc.hasNextLine()) {
-            sc.nextLine(); 
+        String nome = sc.nextLine();
+        while (nome.compareTo("FIM") != 0) {
+            arvore.pesquisar(nome);
+            nome = sc.nextLine();
         }
 
-        int n = 0;
-        if (sc.hasNextInt()) {
-            n = sc.nextInt();
-        }
-        
-        if (sc.hasNextLine()) {
-            sc.nextLine();
-        }
-
-        for (int i = 0; i < n; i++) {
-            if (!sc.hasNextLine()) {
-                break; 
-            }
-            
-            String linha = sc.nextLine().trim();
-            if (linha.isEmpty()) {
-                i--;
-                continue;
-            }
-
-            String[] partes = Restaurante.divideCampo(linha, ' ');
-            String comando  = partes[0];
-
-            if (comando.compareTo("II") == 0) {
-                int idInserir = Restaurante.converteInteiro(partes[1]);
-                lista.inserirInicio(colecao.buscarPorId(idInserir));
-
-            } else if (comando.compareTo("I*") == 0) {
-                int posicao   = Restaurante.converteInteiro(partes[1]);
-                int idInserir = Restaurante.converteInteiro(partes[2]);
-                lista.inserir(colecao.buscarPorId(idInserir), posicao);
-
-            } else if (comando.compareTo("IF") == 0) {
-                int idInserir = Restaurante.converteInteiro(partes[1]);
-                lista.inserirFim(colecao.buscarPorId(idInserir));
-
-            } else if (comando.compareTo("RI") == 0) {
-                System.out.println("(R)" + lista.removerInicio().getNome());
-
-            } else if (comando.compareTo("R*") == 0) {
-                int posicao = Restaurante.converteInteiro(partes[1]);
-                System.out.println("(R)" + lista.remover(posicao).getNome());
-
-            } else if (comando.compareTo("RF") == 0) {
-                System.out.println("(R)" + lista.removerFim().getNome());
-            }
-        }
- 
-        lista.quicksort();
- 
-        for (int i = 0; i < lista.getTamanho(); i++) {
-            System.out.println(lista.getRestaurante(i).formatar());
-        }
- 
         sc.close();
     }
 }

@@ -1,11 +1,13 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include <stdbool.h>
 
 #define TAM_LINHA 1024
 #define MAX_REGISTROS 1000
-
-// --- Estruturas ---
+#define TAM_TABELA 31
+#define TAM_RESERVA 19
+#define TAM_TOTAL (TAM_TABELA + TAM_RESERVA)
 
 typedef struct {
     int ano, mes, dia;
@@ -30,8 +32,6 @@ typedef struct {
     bool aberto;
 } Restaurante;
 
-// --- Funções de Data e Hora ---
-
 Data parseData(char *s) {
     Data d = {0, 0, 0};
     if (s) sscanf(s, "%d-%d-%d", &d.ano, &d.mes, &d.dia);
@@ -53,9 +53,6 @@ int converteFaixaPreco(char *s) {
     return count;
 }
 
-// --- Parsing do CSV ---
-
-// Copia manualmente os campos separados por vírgula, respeitando aspas
 int parseCampos(char *linha, char campos[][200], int maxCampos) {
     int idx_campos = 0;
     int idx_buffer = 0;
@@ -75,9 +72,7 @@ int parseCampos(char *linha, char campos[][200], int maxCampos) {
         i++;
     }
 
-    // Último campo
     campos[idx_campos][idx_buffer] = '\0';
-    // Remove \r\n do último campo
     int j = 0;
     while (campos[idx_campos][j] != '\0' && campos[idx_campos][j] != '\r' && campos[idx_campos][j] != '\n') j++;
     campos[idx_campos][j] = '\0';
@@ -86,7 +81,6 @@ int parseCampos(char *linha, char campos[][200], int maxCampos) {
     return idx_campos;
 }
 
-// Separa tipos de cozinha pelo separador ';'
 int parseLista(char *str, char lista[][50], int maxItens) {
     int n = 0, pos = 0, i = 0;
 
@@ -127,8 +121,6 @@ int lerRestaurante(char *linha, Restaurante *r) {
     return 1;
 }
 
-// --- Impressão ---
-
 void formatarRestaurante(Restaurante *r) {
     char hAbertura[10], hFechamento[10], dLancamento[15], precoStr[10], tiposStr[500];
     int i, offset = 0;
@@ -153,427 +145,300 @@ void formatarRestaurante(Restaurante *r) {
            r->aberto ? "true" : "false");
 }
 
-void ordenarPorNome(Restaurante lista[], int total) {
-    int i, j, minIdx;
-    Restaurante temp;
+typedef struct NoHash {
+    Restaurante dado;
+    struct NoHash *proximo;
+} NoHash;
 
-    for (i = 0; i < total - 1; i++) {
-        minIdx = i;
-        for (j = i + 1; j < total; j++) {
-            if (strcmp(lista[j].nome, lista[minIdx].nome) < 0) {
-                minIdx = j;
-            }
-        }
-        if (minIdx != i) {
-            temp = lista[i];
-            lista[i] = lista[minIdx];
-            lista[minIdx] = temp;
-        }
+typedef struct {
+    NoHash *tabela[TAM_TABELA];
+} TabelaHashIndireta;
+
+void inicializarHash(TabelaHashIndireta *h) {
+    for (int i = 0; i < TAM_TABELA; i++) {
+        h->tabela[i] = NULL;
     }
 }
 
-int buscaBinaria(Restaurante lista[], int total, char *nome) {
-    int inicio = 0, fim = total - 1;
+int calcularHash(char *nome) {
+    int soma = 0;
+    for (int i = 0; nome[i] != '\0'; i++) {
+        soma += (int)nome[i];
+    }
+    return soma % TAM_TABELA;
+}
 
-    while (inicio <= fim) {
-        int meio = (inicio + fim) / 2;
-        int cmp = strcmp(lista[meio].nome, nome);
+void inserirHash(TabelaHashIndireta *h, Restaurante r) {
+    int pos = calcularHash(r.nome);
 
-        if (cmp == 0) {
-            return meio;
-        } else if (cmp < 0) {
-            inicio = meio + 1;
-        } else {
-            fim = meio - 1;
+    // Evita inserção de duplicatas na mesma lista
+    NoHash *atual = h->tabela[pos];
+    while (atual != NULL) {
+        if (strcmp(atual->dado.nome, r.nome) == 0) {
+            return; 
         }
+        atual = atual->proximo;
+    }
+
+    // Inserção no fim da lista encadeada daquela posição
+    NoHash *novo = (NoHash *)malloc(sizeof(NoHash));
+    novo->dado = r;
+    novo->proximo = NULL;
+
+    if (h->tabela[pos] == NULL) {
+        h->tabela[pos] = novo;
+    } else {
+        NoHash *p = h->tabela[pos];
+        while (p->proximo != NULL) {
+            p = p->proximo;
+        }
+        p->proximo = novo;
+    }
+}
+
+int pesquisarHash(TabelaHashIndireta *h, char *nome) {
+    int pos = calcularHash(nome);
+    NoHash *atual = h->tabela[pos];
+
+    while (atual != NULL) {
+        if (strcmp(atual->dado.nome, nome) == 0) {
+            return pos;
+        }
+        atual = atual->proximo;
     }
 
     return -1;
 }
 
-int compararRestaurante(Restaurante *a, Restaurante *b) {
-    if (a->avaliacao < b->avaliacao) return -1;
-    if (a->avaliacao > b->avaliacao) return 1;
-    // Empate: ordena por nome
-    return strcmp(a->nome, b->nome);
-}
-
-int particionar(Restaurante lista[], int inicio, int fim) {
-    Restaurante pivo = lista[fim];
-    int i = inicio - 1;
-
-    for (int j = inicio; j < fim; j++) {
-        if (compararRestaurante(&lista[j], &pivo) <= 0) {
-            i++;
-            Restaurante temp = lista[i];
-            lista[i] = lista[j];
-            lista[j] = temp;
+void liberarHash(TabelaHashIndireta *h) {
+    for (int i = 0; i < TAM_TABELA; i++) {
+        NoHash *atual = h->tabela[i];
+        while (atual != NULL) {
+            NoHash *aux = atual->proximo;
+            free(atual);
+            atual = aux;
         }
-    }
-
-    Restaurante temp = lista[i + 1];
-    lista[i + 1] = lista[fim];
-    lista[fim] = temp;
-
-    return i + 1;
-}
-
-void quicksort(Restaurante lista[], int inicio, int fim) {
-    if (inicio < fim) {
-        int pivo = particionar(lista, inicio, fim);
-        quicksort(lista, inicio, pivo - 1);
-        quicksort(lista, pivo + 1, fim);
+        h->tabela[i] = NULL;
     }
 }
 
-void countingSort(Restaurante lista[], int total) {
-    // Encontra o maior e menor valor de capacidade
-    int minCap = lista[0].capacidade;
-    int maxCap = lista[0].capacidade;
-
-    for (int i = 1; i < total; i++) {
-        if (lista[i].capacidade < minCap) minCap = lista[i].capacidade;
-        if (lista[i].capacidade > maxCap) maxCap = lista[i].capacidade;
-    }
-
-    int intervalo = maxCap - minCap + 1;
-
-    // Conta as ocorrências de cada capacidade
-    int *contagem = (int *)malloc(intervalo * sizeof(int));
-    for (int i = 0; i < intervalo; i++) contagem[i] = 0;
-    for (int i = 0; i < total; i++) contagem[lista[i].capacidade - minCap]++;
-
-    // Acumula as contagens
-    for (int i = 1; i < intervalo; i++) contagem[i] += contagem[i - 1];
-
-    // Monta o array de saída
-    Restaurante saida[MAX_REGISTROS];
-    for (int i = total - 1; i >= 0; i--) {
-        int pos = contagem[lista[i].capacidade - minCap] - 1;
-        saida[pos] = lista[i];
-        contagem[lista[i].capacidade - minCap]--;
-    }
-
-    // Copia de volta para a lista original
-    for (int i = 0; i < total; i++) lista[i] = saida[i];
-    
-    free(contagem);
-}
-
-// --- Pilha ---
-
-typedef struct {
-    Restaurante dados[MAX_REGISTROS];
-    int topo;
-} Pilha;
-
-void inicializarPilha(Pilha *p) {
-    p->topo = -1;
-}
-
-int pilhaVazia(Pilha *p) {
-    return p->topo == -1;
-}
-
-void empilhar(Pilha *p, Restaurante r) {
-    if (p->topo < MAX_REGISTROS - 1) {
-        p->dados[++p->topo] = r;
-    }
-}
-
-Restaurante desempilhar(Pilha *p) {
-    return p->dados[p->topo--];
-}
-
-void insertionSortParcial(Restaurante lista[], int total, int k) {
-    for (int i = 1; i < total; i++) {
-        Restaurante chave = lista[i];
-        int j = i - 1;
-
-        if (i < k || strcmp(chave.cidade, lista[k-1].cidade) < 0) {
-            int limite = i < k ? i : k - 1;
-            j = limite - 1;
-
-            while (j >= 0 && strcmp(lista[j].cidade, chave.cidade) > 0) {
-                lista[j + 1] = lista[j];
-                j--;
-            }
-            lista[j + 1] = chave;
-        }
-    }
-}
-
-int compararData(Data a, Data b) {
-    if (a.ano != b.ano) return a.ano - b.ano;
-    if (a.mes != b.mes) return a.mes - b.mes;
-    return a.dia - b.dia;
-}
-
-int compararHeap(Restaurante *a, Restaurante *b) {
-    int cmp = compararData(a->dataAbertura, b->dataAbertura);
-    if (cmp != 0) return cmp;
-    return strcmp(a->nome, b->nome);
-}
-
-void heapificar(Restaurante heap[], int total, int i) {
-    int menor = i;
-    int esq = 2 * i + 1;
-    int dir = 2 * i + 2;
-
-    if (esq < total && compararHeap(&heap[esq], &heap[menor]) < 0)
-        menor = esq;
-    if (dir < total && compararHeap(&heap[dir], &heap[menor]) < 0)
-        menor = dir;
-
-    if (menor != i) {
-        Restaurante temp = heap[i];
-        heap[i] = heap[menor];
-        heap[menor] = temp;
-        heapificar(heap, total, menor);
-    }
-}
-
-void construirHeap(Restaurante heap[], int total) {
-    for (int i = total / 2 - 1; i >= 0; i--)
-        heapificar(heap, total, i);
-}
-
-Restaurante extrairMinimo(Restaurante heap[], int *total) {
-    Restaurante min = heap[0];
-    heap[0] = heap[--(*total)];
-    heapificar(heap, *total, 0);
-    return min;
-}
-
-typedef struct {
-    Restaurante *dados;
-    int tamanho;
-    int capacidade;
-} Lista;
-
-void inicializarLista(Lista *l) {
-    l->capacidade = 10;
-    l->tamanho = 0;
-    l->dados = (Restaurante *)malloc(l->capacidade * sizeof(Restaurante));
-}
-
-void expandirLista(Lista *l) {
-    if (l->tamanho >= l->capacidade) {
-        l->capacidade *= 2;
-        l->dados = (Restaurante *)realloc(l->dados, l->capacidade * sizeof(Restaurante));
-    }
-}
-
-void inserirInicio(Lista *l, Restaurante r) {
-    expandirLista(l);
-    for (int i = l->tamanho; i > 0; i--)
-        l->dados[i] = l->dados[i - 1];
-    l->dados[0] = r;
-    l->tamanho++;
-}
-
-void inserir(Lista *l, Restaurante r, int posicao) {
-    if (posicao < 0 || posicao > l->tamanho) return;
-    expandirLista(l);
-    for (int i = l->tamanho; i > posicao; i--)
-        l->dados[i] = l->dados[i - 1];
-    l->dados[posicao] = r;
-    l->tamanho++;
-}
-
-void inserirFim(Lista *l, Restaurante r) {
-    expandirLista(l);
-    l->dados[l->tamanho++] = r;
-}
-
-Restaurante removerInicio(Lista *l) {
-    Restaurante r = l->dados[0];
-    for (int i = 0; i < l->tamanho - 1; i++)
-        l->dados[i] = l->dados[i + 1];
-    l->tamanho--;
-    return r;
-}
-
-Restaurante removerPosicao(Lista *l, int posicao) {
-    Restaurante r = l->dados[posicao];
-    for (int i = posicao; i < l->tamanho - 1; i++)
-        l->dados[i] = l->dados[i + 1];
-    l->tamanho--;
-    return r;
-}
-
-Restaurante removerFim(Lista *l) {
-    return l->dados[--l->tamanho];
-}
-
-typedef struct No {
+typedef struct NoLista {
     Restaurante dado;
-    struct No *proximo;
-} No;
-
-typedef struct {
-    No *inicio;
-    No *fim;
-    int tamanho;
-} Fila;
-
-void inicializarFila(Fila *f) {
-    f->inicio = NULL;
-    f->fim = NULL;
-    f->tamanho = 0;
-}
-
-int filaVazia(Fila *f) {
-    return f->inicio == NULL;
-}
-
-void enfileirar(Fila *f, Restaurante r) {
-    No *novo = (No *)malloc(sizeof(No));
-    novo->dado = r;
-    novo->proximo = NULL;
-
-    if (filaVazia(f)) {
-        f->inicio = novo;
-        f->fim = novo;
-    } else {
-        f->fim->proximo = novo;
-        f->fim = novo;
-    }
-    f->tamanho++;
-}
-
-Restaurante desenfileirar(Fila *f) {
-    No *temp = f->inicio;
-    Restaurante r = temp->dado;
-    f->inicio = f->inicio->proximo;
-    if (f->inicio == NULL) f->fim = NULL;
-    free(temp);
-    f->tamanho--;
-    return r;
-}
-
-typedef struct NoFlex {
-    Restaurante dado;
-    struct NoFlex *proximo;
-} NoFlex;
-
-typedef struct {
-    NoFlex *inicio;
-    int tamanho;
-} ListaEncadeada;
-
-void inicializarListaEnc(ListaEncadeada *l) {
-    l->inicio = NULL;
-    l->tamanho = 0;
-}
-
-void inserirFimEnc(ListaEncadeada *l, Restaurante r) {
-    NoFlex *novo = (NoFlex *)malloc(sizeof(NoFlex));
-    novo->dado = r;
-    novo->proximo = NULL;
-
-    if (l->inicio == NULL) {
-        l->inicio = novo;
-    } else {
-        NoFlex *atual = l->inicio;
-        while (atual->proximo != NULL)
-            atual = atual->proximo;
-        atual->proximo = novo;
-    }
-    l->tamanho++;
-}
-
-// Selection sort: troca apenas os dados, sem remanejar ponteiros
-void selectionSortEnc(ListaEncadeada *l) {
-    NoFlex *i = l->inicio;
-
-    while (i != NULL) {
-        NoFlex *minNo = i;
-        NoFlex *j = i->proximo;
-
-        // Encontra o menor nome a partir de i
-        while (j != NULL) {
-            if (strcmp(j->dado.nome, minNo->dado.nome) < 0)
-                minNo = j;
-            j = j->proximo;
-        }
-
-        // Troca os dados entre i e minNo
-        if (minNo != i) {
-            Restaurante temp = i->dado;
-            i->dado = minNo->dado;
-            minNo->dado = temp;
-        }
-
-        i = i->proximo;
-    }
-}
+    struct NoLista *proximo;
+} NoLista;
 
 typedef struct NoArvore {
-    Restaurante dado;
+    char chave;
+    NoLista *primeiro;
     struct NoArvore *esq;
     struct NoArvore *dir;
 } NoArvore;
 
-NoArvore *criarNo(Restaurante r) {
-    NoArvore *novo = (NoArvore *)malloc(sizeof(NoArvore));
-    novo->dado = r;
-    novo->esq  = NULL;
-    novo->dir  = NULL;
+NoArvore* criarNoArvore(char chave) {
+    NoArvore *novo = (NoArvore*)malloc(sizeof(NoArvore));
+    novo->chave = chave;
+    novo->primeiro = NULL;
+    novo->esq = NULL;
+    novo->dir = NULL;
     return novo;
 }
 
-NoArvore *inserirArvore(NoArvore *raiz, Restaurante r) {
-    if (raiz == NULL) return criarNo(r);
-    int cmp = strcmp(r.nome, raiz->dado.nome);
-    if (cmp < 0)      raiz->esq = inserirArvore(raiz->esq, r);
-    else if (cmp > 0) raiz->dir = inserirArvore(raiz->dir, r);
+void inserirListaOrdenada(NoLista **topo, Restaurante r) {
+    NoLista *novo = (NoLista*)malloc(sizeof(NoLista));
+    novo->dado = r;
+    novo->proximo = NULL;
+
+    if (*topo == NULL || strcmp(r.nome, (*topo)->dado.nome) < 0) {
+        novo->proximo = *topo;
+        *topo = novo;
+    } else {
+        NoLista *atual = *topo;
+        while (atual->proximo != NULL && strcmp(atual->proximo->dado.nome, r.nome) < 0) {
+            atual = atual->proximo;
+        }
+        novo->proximo = atual->proximo;
+        atual->proximo = novo;
+    }
+}
+
+NoArvore* inserirArvore(NoArvore *raiz, Restaurante r) {
+    char letra = r.nome[0];
+    if (raiz == NULL) {
+        NoArvore *novo = criarNoArvore(letra);
+        inserirListaOrdenada(&(novo->primeiro), r);
+        return novo;
+    }
+
+    if (letra < raiz->chave) {
+        raiz->esq = inserirArvore(raiz->esq, r);
+    } else if (letra > raiz->chave) {
+        raiz->dir = inserirArvore(raiz->dir, r);
+    } else {
+        inserirListaOrdenada(&(raiz->primeiro), r);
+    }
     return raiz;
 }
 
-void pesquisarArvore(NoArvore *raiz, char *nome) {
-    int primeiro = 1;
+void pesquisarArvoreLista(NoArvore *raiz, char *nome) {
+    char letra = nome[0];
     NoArvore *atual = raiz;
+    int primeiroPonteiro = 1;
 
     while (atual != NULL) {
-        if (!primeiro) printf(" ");
-        if (atual == raiz) printf("raiz");
+        if (!primeiroPonteiro) printf(" ");
+        if (atual == raiz && primeiroPonteiro) printf("RAIZ");
 
-        int cmp = strcmp(nome, atual->dado.nome);
-
-        if (cmp == 0) {
-            printf(" SIM\n");
-            return;
-        } else if (cmp < 0) {
+        if (letra == atual->chave) {
+            NoLista *nodoLista = atual->primeiro;
+            while (nodoLista != NULL) {
+                int cmp = strcmp(nome, nodoLista->dado.nome);
+                if (cmp == 0) {
+                    printf(" SIM\n");
+                    formatarRestaurante(&(nodoLista->dado));
+                    return;
+                }
+                printf(" %s", nodoLista->dado.nome);
+                nodoLista = nodoLista->proximo;
+            }
+            break; 
+        } else if (letra < atual->chave) {
             atual = atual->esq;
-            if (atual != NULL) printf(" esq");
+            if (atual != NULL) printf(" ESQ");
         } else {
             atual = atual->dir;
-            if (atual != NULL) printf(" dir");
+            if (atual != NULL) printf(" DIR");
         }
-        primeiro = 0;
+        primeiroPonteiro = 0;
     }
     printf(" NAO\n");
 }
 
-void emOrdem(NoArvore *raiz) {
+void liberarArvoreLista(NoArvore *raiz) {
     if (raiz == NULL) return;
-    emOrdem(raiz->esq);
-    formatarRestaurante(&raiz->dado);
-    emOrdem(raiz->dir);
-}
-
-void liberarArvore(NoArvore *raiz) {
-    if (raiz == NULL) return;
-    liberarArvore(raiz->esq);
-    liberarArvore(raiz->dir);
+    liberarArvoreLista(raiz->esq);
+    liberarArvoreLista(raiz->dir);
+    
+    NoLista *atual = raiz->primeiro;
+    while (atual != NULL) {
+        NoLista *aux = atual->proximo;
+        free(atual);
+        atual = aux;
+    }
     free(raiz);
 }
 
+// --- Estruturas da Árvore Trie com Lista Flexível ---
+
+struct NoTrie;
+
+// Célula da lista encadeada (lista flexível) que aponta para os nós filhos
+typedef struct CelulaTrie {
+    char elemento;
+    struct NoTrie *noFilho;
+    struct CelulaTrie *proximo;
+} CelulaTrie;
+
+// Nó da Árvore Trie
+typedef struct NoTrie {
+    CelulaTrie *primeiro; // Sentinela da lista flexível de filhos
+    CelulaTrie *ultimo;
+    bool ehFim;           // True se uma palavra termina aqui
+    Restaurante dado;     // Armazena o registro do restaurante se ehFim for true
+} NoTrie;
+
+NoTrie* criarNoTrie() {
+    NoTrie *novo = (NoTrie*)malloc(sizeof(NoTrie));
+    novo->ehFim = false;
+    
+    // Inicializa a lista flexível com um nó sentinela
+    novo->primeiro = (CelulaTrie*)malloc(sizeof(CelulaTrie));
+    novo->primeiro->proximo = NULL;
+    novo->ultimo = novo->primeiro;
+    
+    return novo;
+}
+
+CelulaTrie* pesquisarFilho(NoTrie *no, char c) {
+    CelulaTrie *atual = no->primeiro->proximo;
+    while (atual != NULL) {
+        if (atual->elemento == c) {
+            return atual;
+        }
+        atual = atual->proximo;
+    }
+    return NULL;
+}
+
+void inserirFilho(NoTrie *no, char c, NoTrie *filho) {
+    CelulaTrie *novo = (CelulaTrie*)malloc(sizeof(CelulaTrie));
+    novo->elemento = c;
+    novo->noFilho = filho;
+    novo->proximo = NULL;
+    
+    no->ultimo->proximo = novo;
+    no->ultimo = novo;
+}
+
+void inserirTrie(NoTrie *raiz, Restaurante r) {
+    NoTrie *atual = raiz;
+    char *nome = r.nome;
+    
+    for (int i = 0; nome[i] != '\0'; i++) {
+        char c = nome[i];
+        CelulaTrie *celula = pesquisarFilho(atual, c);
+        
+        if (celula == NULL) {
+            NoTrie *novoFilho = criarNoTrie();
+            inserirFilho(atual, c, novoFilho);
+            atual = novoFilho;
+        } else {
+            atual = celula->noFilho;
+        }
+    }
+    atual->ehFim = true;
+    atual->dado = r;
+}
+
+void pesquisarTrie(NoTrie *raiz, char *nome) {
+    NoTrie *atual = raiz;
+    
+    for (int i = 0; nome[i] != '\0'; i++) {
+        char c = nome[i];
+        
+        CelulaTrie *celula = pesquisarFilho(atual, c);
+        if (celula == NULL) {
+            printf(" NAO\n");
+            return;
+        }
+        
+        printf("%c ", c);
+        atual = celula->noFilho;
+    }
+    
+    if (atual->ehFim) {
+        printf("SIM ");
+        formatarRestaurante(&(atual->dado));
+    } else {
+        printf("NAO\n");
+    }
+}
+
+void liberarTrie(NoTrie *no) {
+    if (no == NULL) return;
+    
+    CelulaTrie *atual = no->primeiro->proximo;
+    while (atual != NULL) {
+        CelulaTrie *aux = atual->proximo;
+        liberarTrie(atual->noFilho);
+        free(atual);
+        atual = aux;
+    }
+    free(no->primeiro); // Libera o nó sentinela
+    free(no);
+}
 
 int main() {
     FILE *arquivo = fopen("/tmp/restaurantes.csv", "r");
-    //FILE *arquivo = fopen("../dataset/restaurantes.csv", "r");
     if (!arquivo) {
         printf("Erro ao abrir o arquivo\n");
         return 1;
@@ -585,33 +450,34 @@ int main() {
 
     fgets(linha, TAM_LINHA, arquivo);
 
-    while (fgets(linha, TAM_LINHA, arquivo) && total < MAX_REGISTROS)
+    while (fgets(linha, TAM_LINHA, arquivo) && total < MAX_REGISTROS) {
         if (lerRestaurante(linha, &todos[total])) total++;
+    }
     fclose(arquivo);
 
-    NoArvore *raiz = NULL;
+    NoTrie *raiz = criarNoTrie();
     int buscaId;
-    scanf("%d", &buscaId);
+    
+    if (scanf("%d", &buscaId) != 1) return 0;
 
     while (buscaId != -1) {
         for (int i = 0; i < total; i++) {
             if (todos[i].id == buscaId) {
-                raiz = inserirArvore(raiz, todos[i]);
+                inserirTrie(raiz, todos[i]);
                 break;
             }
         }
-        scanf("%d", &buscaId);
+        if (scanf("%d", &buscaId) != 1) break;
     }
 
     char nomeBusca[100];
-    scanf(" %[^\n]", nomeBusca);
+    if (scanf(" %[^\n]", nomeBusca) != 1) return 0;
 
     while (strcmp(nomeBusca, "FIM") != 0) {
-        pesquisarArvore(raiz, nomeBusca);
-        scanf(" %[^\n]", nomeBusca);
+        pesquisarTrie(raiz, nomeBusca);
+        if (scanf(" %[^\n]", nomeBusca) != 1) break;
     }
 
-    emOrdem(raiz);
-    liberarArvore(raiz);
+    liberarTrie(raiz);
     return 0;
 }
