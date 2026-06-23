@@ -68,14 +68,15 @@ public class MenorPilha {
         Scanner sc = new Scanner(System.in);
         int operacoes = sc.nextInt();
         int i = 0;
+        int num = 0;
         Pilha p = new Pilha();
         while(i < operacoes){
             String op = sc.next();
             if(op.equals("PUSH")){
-                int num = sc.nextInt();
+                num = sc.nextInt();
                 p.push(num);
             }else if(op.equals("POP")){
-                int num = p.pop();
+                num = p.pop();
             }else if(op.equals("MIN")){
                 int min = p.min();
                 System.out.println(min);
